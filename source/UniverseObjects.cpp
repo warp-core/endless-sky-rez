@@ -20,6 +20,7 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include "Files.h"
 #include "Information.h"
 #include "Logger.h"
+#include "rez/ResourceFile.h"
 #include "Sprite.h"
 #include "SpriteSet.h"
 #include "TaskQueue.h"

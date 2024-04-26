@@ -355,6 +355,14 @@ target_sources(EndlessSkyLib PRIVATE
 	comparators/ByGivenOrder.h
 	comparators/ByName.h
 	comparators/BySeriesAndIndex.h
+	rez/Resource.cpp
+	rez/Resource.h
+	rez/ResourceFile.cpp
+	rez/ResourceFile.h
+	rez/ResourceFileStream.cpp
+	rez/ResourceFileStream.h
+	rez/ResourceType.cpp
+	rez/ResourceType.h
 	ship/ShipAICache.cpp
 	ship/ShipAICache.h
 	text/DisplayText.cpp
