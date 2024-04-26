@@ -536,6 +536,38 @@ string Files::Read(FILE *file)
 
 
 
+vector<char> Files::ReadRaw(const string &path)
+{
+	File file(path);
+	return ReadRaw(file);
+}
+
+
+vector<char> Files::ReadRaw(FILE *file)
+{
+	vector<char> result;
+	if(!file)
+		return result;
+
+	// Find the remaining number of bytes in the file.
+	size_t start = ftell(file);
+	fseek(file, 0, SEEK_END);
+	size_t size = ftell(file) - start;
+	// Reserve one extra byte because DataFile appends a '\n' to the end of each
+	// file it reads, and that's the most common use of this function.
+	result.resize(size);
+	fseek(file, start, SEEK_SET);
+
+	// Read the file data.
+	size_t bytes = fread(&result[0], 1, result.size(), file);
+	if(bytes != result.size())
+		throw runtime_error("Error reading file!");
+
+	return result;
+}
+
+
+
 void Files::Write(const string &path, const string &data)
 {
 	File file(path, true);

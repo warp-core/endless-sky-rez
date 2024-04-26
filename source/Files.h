@@ -66,6 +66,8 @@ public:
 	static FILE *Open(const std::string &path, bool write = false);
 	static std::string Read(const std::string &path);
 	static std::string Read(FILE *file);
+	static std::vector<char> ReadRaw(const std::string &path);
+	static std::vector<char> ReadRaw(FILE *file);
 	static void Write(const std::string &path, const std::string &data);
 	static void Write(FILE *file, const std::string &data);
 	static void CreateFolder(const std::string &path);
