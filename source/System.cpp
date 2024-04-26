@@ -96,7 +96,8 @@ void System::Load(const DataNode &node, Set<Planet> &planets)
 {
 	if(node.Size() < 2)
 		return;
-	name = node.Token(1);
+	trueName = node.Token(1);
+	name = trueName;
 	isDefined = true;
 
 	// For the following keys, if this data node defines a new value for that
@@ -367,6 +368,8 @@ void System::Load(const DataNode &node, Set<Planet> &planets)
 			position.Set(child.Value(valueIndex), child.Value(valueIndex + 1));
 			hasPosition = true;
 		}
+		else if(key == "display name")
+			name = value;
 		else if(key == "government")
 			government = GameData::Governments().Get(value);
 		else if(key == "music")
@@ -582,8 +585,16 @@ const string &System::Name() const
 
 
 
+const string &System::TrueName() const
+{
+	return trueName;
+}
+
+
+
 void System::SetName(const std::string &name)
 {
+	this->trueName = name;
 	this->name = name;
 }
 
