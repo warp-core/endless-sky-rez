@@ -321,9 +321,19 @@ void UniverseObjects::CheckReferences()
 void UniverseObjects::LoadFile(const string &path, bool debugMode)
 {
 	// This is an ordinary file. Check to see if it is an image.
-	if(path.length() < 4 || path.compare(path.length() - 4, 4, ".txt"))
+	if(path.length() < 4)
 		return;
 
+	if(!path.compare(path.length() - 4, 4, ".txt"))
+		LoadESDataFile(path, debugMode);
+	else if(!path.compare(path.length() - 4, 4, ".rez"))
+		LoadRezFile(path, debugMode);
+}
+
+
+
+void UniverseObjects::LoadESDataFile(const std::string &path, bool debugMode)
+{
 	DataFile data(path);
 	if(debugMode)
 		Logger::LogError("Parsing: " + path);
@@ -491,6 +501,18 @@ void UniverseObjects::LoadFile(const string &path, bool debugMode)
 		}
 		else
 			node.PrintTrace("Skipping unrecognized root object:");
+	}
+}
+
+
+
+void UniverseObjects::LoadRezFile(const string &path, bool debugMode)
+{
+	ResourceFile data(path);
+
+	for(const ResourceType &type : data)
+	{
+		const string &code = type.GetCodeString();
 	}
 }
 

@@ -94,6 +94,8 @@ public:
 
 private:
 	void LoadFile(const std::string &path, bool debugMode = false);
+	void LoadESDataFile(const std::string &path, bool debugMode);
+	void LoadRezFile(const std::string &path, bool debugMode);
 
 
 private:
