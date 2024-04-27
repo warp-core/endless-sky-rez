@@ -97,6 +97,9 @@ namespace {
 		static mutex classGuard;
 		static map<string, set<unsigned>> classes;
 	};
+
+	mutex GovernmentClasses::classGuard;
+	map<string, set<unsigned>> GovernmentClasses::classes;
 }
 
 
