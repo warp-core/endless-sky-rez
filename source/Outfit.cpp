@@ -373,7 +373,7 @@ void Outfit::Load(const DataNode &node)
 void Outfit::Load(const Resource &resource)
 {
 	isDefined = true;
-	trueName = Resource::IDToString(resource.ID());
+	trueName = resource.IDString();
 	displayName = resource.Name();
 	ResourceFileStream data(resource.Data());
 

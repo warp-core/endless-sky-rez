@@ -495,7 +495,7 @@ void System::Load(const Resource &res)
 	hasPosition = true;
 
 	name = res.Name();
-	trueName = Resource::IDToString(res.ID());
+	trueName = res.IDString();
 
 	ResourceFileStream data(vector<char>(res.Data()));
 

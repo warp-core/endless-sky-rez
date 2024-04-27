@@ -518,19 +518,19 @@ void UniverseObjects::LoadRezFile(const string &path, bool debugMode)
 		const string &code = type.GetCodeString();
 		if(code == "syst")
 			for(const Resource &resource : type)
-				systems.Get(Resource::IDToString(resource.ID()))->Load(resource);
+				systems.Get(resource.IDString())->Load(resource);
 		else if(code == "govt")
 			for(const Resource &resource : type)
-				governments.Get(Resource::IDToString(resource.ID()))->Load(resource);
+				governments.Get(resource.IDString())->Load(resource);
 		else if(code == "desc")
 			for(const Resource &resource : type)
-				descriptions.Get(Resource::IDToString(resource.ID()))->Load(resource);
+				descriptions.Get(resource.IDString())->Load(resource);
 		else if(code == "weap")
 			for(const Resource &resource : type)
-				weapons.Get(Resource::IDToString(resource.ID()))->LoadWeapon(resource);
+				weapons.Get(resource.IDString())->LoadWeapon(resource);
 		else if(code == "outf")
 			for(const Resource &resource : type)
-				outfits.Get(Resource::IDToString(resource.ID()))->Load(resource);
+				outfits.Get(resource.IDString())->Load(resource);
 	}
 }
 

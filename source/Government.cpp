@@ -441,7 +441,7 @@ void Government::Load(const DataNode &node)
 
 void Government::Load(const Resource &res)
 {
-	name = Resource::IDToString(res.ID());
+	name = res.IDString();
 	displayName = res.Name();
 
 	ResourceFileStream data(vector<char>(res.Data()));

@@ -10,6 +10,7 @@ public:
 	Resource(int64_t id, std::string name, std::vector<char> data);
 
 	int64_t ID() const;
+	std::string IDString() const;
 	const std::string &Name() const;
 	const std::vector<char> &Data() const;
 
