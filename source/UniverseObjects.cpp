@@ -183,9 +183,9 @@ void UniverseObjects::UpdateSystems(const PlayerInfo *player)
 
 		// If there were changes to a system there might have been a change to a legacy
 		// wormhole which we must handle.
-		for(const auto &object : it.second.Objects())
-			if(object.GetPlanet())
-				planets.Get(object.GetPlanet()->TrueName())->FinishLoading(wormholes);
+		for(const auto *object : it.second.Objects())
+			if(object->GetPlanet())
+				planets.Get(object->GetPlanet()->TrueName())->FinishLoading(wormholes);
 	}
 }
 
@@ -518,7 +518,14 @@ void UniverseObjects::LoadRezFile(const string &path, bool debugMode)
 		const string &code = type.GetCodeString();
 		if(code == "syst")
 			for(const Resource &resource : type)
-				systems.Get(resource.IDString())->Load(resource);
+				systems.Get(resource.IDString())->Load(resource, planets);
+		else if(code == "spob")
+			for(const Resource &resource : type)
+			{
+				string resID = resource.IDString();
+				planets.Get(resID)->Load(resource);
+				stellarObjects.Get(resID)->Load(resource);
+			}
 		else if(code == "govt")
 			for(const Resource &resource : type)
 				governments.Get(resource.IDString())->Load(resource);

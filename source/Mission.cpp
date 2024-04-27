@@ -440,7 +440,7 @@ void Mission::Save(DataWriter &out, const string &tag) const
 			out.EndChild();
 		}
 		if(destination)
-			out.Write("destination", destination->Name());
+			out.Write("destination", destination->TrueName());
 		for(const System *system : waypoints)
 			out.Write("waypoint", system->TrueName());
 		for(const System *system : visitedWaypoints)

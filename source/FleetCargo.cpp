@@ -36,8 +36,9 @@ namespace {
 		auto outfits = Sale<Outfit>();
 		if(here)
 		{
-			for(const StellarObject &object : here->Objects())
+			for(const StellarObject *objectPtr : here->Objects())
 			{
+				const StellarObject &object = *objectPtr;
 				const Planet *planet = object.GetPlanet();
 				if(planet && planet->IsValid() && planet->HasOutfitter())
 					outfits.Add(planet->Outfitter());

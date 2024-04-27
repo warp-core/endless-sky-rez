@@ -16,6 +16,7 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include "Planet.h"
 
 #include "DataNode.h"
+#include "Description.h"
 #include "text/Format.h"
 #include "GameData.h"
 #include "Government.h"
@@ -23,6 +24,8 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include "PlayerInfo.h"
 #include "Politics.h"
 #include "Random.h"
+#include "rez/Resource.h"
+#include "rez/ResourceFileStream.h"
 #include "Ship.h"
 #include "ShipEvent.h"
 #include "SpriteSet.h"
@@ -59,6 +62,7 @@ void Planet::Load(const DataNode &node, Set<Wormhole> &wormholes)
 	if(node.Size() < 2)
 		return;
 	name = node.Token(1);
+	trueName = name;
 	// The planet's name is needed to save references to this object, so a
 	// flag is used to test whether Load() was called at least once for it.
 	isDefined = true;
@@ -295,6 +299,75 @@ void Planet::Load(const DataNode &node, Set<Wormhole> &wormholes)
 
 
 
+void Planet::Load(const Resource &res)
+{
+	trueName = res.IDString();
+	name = res.Name();
+	id = res.ID();
+	isDefined = true;
+
+	ResourceFileStream data(res.Data());
+
+	data.Move(6);
+
+	uint32_t flags1 = data.ReadLong();
+	{
+		// 0x00000001: can land here.
+		// 0x00000002: has trade.
+		// 0x00000004: can outfit ships here.
+		// 0x00000008: can buy ships here.
+		// 0x00000020: uninhabted (no traffic control or refuelling.)
+		// 0x00000040: has bar.
+		// 0x00000080: can only land if stellar is destroyed.
+		// 0x?0000000: food: 0 - no food, 1, 2, 4 - low, medium, high prices.
+		// 0x0?000000: industrial.
+		// 0x00?00000: medical.
+		// 0x000?0000: luxury goods.
+		// 0x0000?000: metal.
+		// 0x00000?00: equipment.
+	}
+
+	int16_t tributeVal = data.ReadSignedShort();
+	int16_t techLevel = data.ReadSignedShort();
+	if(tributeVal <= 0)
+		tribute = 1000 * techLevel;
+	else
+		tribute = tributeVal;
+	int16_t specialTechs[8];
+	memcpy(specialTechs, data.ReadBytes(6).data(), 6);
+	int16_t govID = data.ReadSignedShort();
+	if(govID <= 0)
+		government = GameData::Governments().Get("Independent");
+	else
+		government = GameData::Governments().Get(Resource::IDToString(govID));
+	int16_t minStatus = data.ReadSignedShort();
+	int16_t customPicID = data.ReadSignedShort();
+	int16_t customSoundID = data.ReadSignedShort();
+	int16_t defenseDude = data.ReadSignedShort();
+	int16_t defenseCount = data.ReadSignedShort();
+	uint16_t flags2 = data.ReadShort();
+	{
+		// 0x0010: loop sounds.
+		// 0x0020: starts the game domminated.
+		// 0x0040: starts the game destroyed.
+		// 0x0400: can buy any non-permanent outfit, regardless of tech level.
+		// 0x1000: this is a hypergate.
+		// 0x2000: this is a wormhole.
+	}
+	data.Move(4);
+	int16_t hyperlinks[8];
+	memcpy(hyperlinks, data.ReadBytes(16).data(), 16);
+	char onDominate[255];
+	memcpy(onDominate, data.ReadBytes(255).data(), 255);
+	char onRelease[255];
+	memcpy(onRelease, data.ReadBytes(255).data(), 255);
+	int32_t landingFee = data.ReadSignedLong();
+	data.Move(524);
+	memcpy(&specialTechs[3], data.ReadBytes(10).data(), 10);
+}
+
+
+
 // Legacy wormhole do not have an associated Wormhole object so
 // we must auto generate one if we detect such legacy wormhole.
 void Planet::FinishLoading(Set<Wormhole> &wormholes)
@@ -335,6 +408,7 @@ const string &Planet::Name() const
 void Planet::SetName(const string &name)
 {
 	this->name = name;
+	trueName = name;
 }
 
 
@@ -342,7 +416,7 @@ void Planet::SetName(const string &name)
 // Get the name used for this planet in the data files.
 const string &Planet::TrueName() const
 {
-	return name;
+	return trueName;
 }
 
 
@@ -350,6 +424,8 @@ const string &Planet::TrueName() const
 // Get the planet's descriptive text.
 const string &Planet::Description() const
 {
+	if(id)
+		return GameData::Descriptions().Get(trueName)->GetString();
 	return description;
 }
 

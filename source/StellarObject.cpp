@@ -20,6 +20,9 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include "Planet.h"
 #include "Politics.h"
 #include "Radar.h"
+#include "rez/Resource.h"
+#include "rez/ResourceFileStream.h"
+#include "SpriteSet.h"
 
 #include <algorithm>
 
@@ -36,6 +39,49 @@ StellarObject::StellarObject()
 	// Unlike ships and projectiles, stellar objects are not drawn shrunk to half size,
 	// because they do not need to be so sharp.
 	zoom = 2.;
+}
+
+
+
+void StellarObject::Load(const Resource &res)
+{
+	planet = GameData::Planets().Get(res.IDString());
+
+	ResourceFileStream data(res.Data());
+
+	speed = 0.;
+
+	Point pos(data.ReadSignedShort(), data.ReadSignedShort());
+	distance = pos.Length();
+	offset = Angle(pos).Degrees();
+
+	SetSprite(SpriteSet::Get(Resource::IDToString(data.ReadSignedShort())));
+
+	uint32_t flags1 = data.ReadLong();
+	{
+		if(flags1 & 0x00000010)
+		{
+			isStar = false;
+			isStation = true;
+		}
+	}
+
+	data.Move(22);
+
+	uint16_t flags2 = data.ReadShort();
+	int16_t animationDelay = data.ReadSignedShort();
+	int16_t frame0Bias = data.ReadSignedShort();
+	data.Move(530);
+	int16_t gravity = data.ReadSignedShort();
+	int16_t weapon = data.ReadSignedShort();
+	int32_t strength = data.ReadLong();
+	int16_t deadType = data.ReadSignedShort();
+	int16_t deadTime = data.ReadSignedShort();
+	int16_t explosionType = data.ReadSignedShort();
+	char onDestroy[255];
+	memcpy(onDestroy, data.ReadBytes(255).data(), 255);
+	char onRegenerate[255];
+	memcpy(onRegenerate, data.ReadBytes(255).data(), 255);
 }
 
 

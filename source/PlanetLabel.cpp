@@ -210,9 +210,9 @@ bool PlanetLabel::HasOverlaps(const vector<PlanetLabel> &labels, const System &s
 		if(boundingBox.Overlaps(label.GetBoundingBox(zoom)))
 			return true;
 
-	for(const StellarObject &other : system.Objects())
-		if(&other != &object && boundingBox.Overlaps(other.Position() * zoom,
-				other.Radius() * zoom + MIN_DISTANCE))
+	for(const StellarObject *other : system.Objects())
+		if(other != &object && boundingBox.Overlaps(other->Position() * zoom,
+				other->Radius() * zoom + MIN_DISTANCE))
 			return true;
 
 	return false;

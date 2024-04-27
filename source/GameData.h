@@ -60,6 +60,7 @@ class Ship;
 class Sprite;
 class StarField;
 class StartConditions;
+class StellarObject;
 class System;
 class TaskQueue;
 class Test;
@@ -146,6 +147,7 @@ public:
 
 	static const Set<Description> &Descriptions();
 	static const Set<Weapon> &Weapons();
+	static const Set<StellarObject> &StellarObjects();
 
 	static ConditionsStore &GlobalConditions();
 

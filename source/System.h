@@ -72,7 +72,7 @@ public:
 public:
 	// Load a system's description.
 	void Load(const DataNode &node, Set<Planet> &planets);
-	void Load(const Resource &res);
+	void Load(const Resource &res, Set<Planet> &planets);
 	// Update any information about the system that may have changed due to events,
 	// e.g. neighbors, solar wind and power, or if the system is inhabited.
 	void UpdateSystem(const Set<System> &systems, const std::set<double> &neighborDistances,
@@ -130,7 +130,7 @@ public:
 	// Move the stellar objects to their positions on the given date.
 	void SetDate(const Date &date);
 	// Get the stellar object locations on the most recently set date.
-	const std::vector<StellarObject> &Objects() const;
+	const std::vector<const StellarObject *> Objects() const;
 	// Get the stellar object (if any) for the given planet.
 	const StellarObject *FindStellar(const Planet *planet) const;
 	// Get the habitable zone's center.
@@ -246,6 +246,7 @@ private:
 	// order, updating positions, an object's parents will already be at the
 	// proper position before that object is updated).
 	std::vector<StellarObject> objects;
+	std::vector<StellarObject *> rezObjects;
 	std::vector<Asteroid> asteroids;
 	const Sprite *haze = nullptr;
 	std::vector<RandomEvent<Fleet>> fleets;

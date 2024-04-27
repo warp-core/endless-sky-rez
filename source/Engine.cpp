@@ -256,9 +256,12 @@ Engine::Engine(PlayerInfo &player)
 		return;
 
 	// Preload any landscapes for this system.
-	for(const StellarObject &object : player.GetSystem()->Objects())
+	for(const StellarObject *objectPtr : player.GetSystem()->Objects())
+	{
+		const StellarObject &object = *objectPtr;
 		if(object.HasSprite() && object.HasValidPlanet())
 			GameData::Preload(queue, object.GetPlanet()->Landscape());
+	}
 	queue.Wait();
 
 	// Figure out what planet the player is landed on, if any.
@@ -271,7 +274,9 @@ Engine::Engine(PlayerInfo &player)
 	draw[currentCalcBuffer].SetCenter(center);
 	radar[currentCalcBuffer].SetCenter(center);
 	const Ship *flagship = player.Flagship();
-	for(const StellarObject &object : player.GetSystem()->Objects())
+	for(const StellarObject *objectPtr : player.GetSystem()->Objects())
+	{
+		const StellarObject &object = *objectPtr;
 		if(object.HasSprite())
 		{
 			draw[currentCalcBuffer].Add(object);
@@ -279,6 +284,7 @@ Engine::Engine(PlayerInfo &player)
 			double r = max(2., object.Radius() * .03 + .5);
 			radar[currentCalcBuffer].Add(object.RadarType(flagship), object.Position(), r, r - 1.);
 		}
+	}
 
 	// Add all neighboring systems that the player has seen to the radar.
 	const System *targetSystem = flagship ? flagship->GetTargetSystem() : nullptr;
@@ -514,9 +520,12 @@ void Engine::Step(bool isActive)
 			doEnterLabels = false;
 			// Create the planet labels as soon as we entered a new system.
 			labels.clear();
-			for(const StellarObject &object : player.GetSystem()->Objects())
+			for(const StellarObject *objectPtr : player.GetSystem()->Objects())
+			{
+				const StellarObject &object = *objectPtr;
 				if(object.HasSprite() && object.HasValidPlanet() && object.GetPlanet()->IsAccessible(flagship.get()))
 					labels.emplace_back(labels, *player.GetSystem(), object);
+			}
 		}
 		if(doEnter && flagship->Zoom() == 1. && !flagship->IsHyperspacing())
 		{
@@ -608,7 +617,9 @@ void Engine::Step(bool isActive)
 		bool travelPlanIsValid = false;
 		// If the player is traveling through a wormhole to the next system, then the plan is valid.
 		const System *system = player.TravelPlan().back();
-		for(const StellarObject &object : flagship->GetSystem()->Objects())
+		for(const StellarObject *objectPtr : flagship->GetSystem()->Objects())
+		{
+			const StellarObject &object = *objectPtr;
 			if(object.HasSprite() && object.HasValidPlanet() && object.GetPlanet()->IsWormhole()
 				&& object.GetPlanet()->IsAccessible(flagship.get()) && player.HasVisited(*object.GetPlanet())
 				&& player.CanView(*system))
@@ -620,6 +631,7 @@ void Engine::Step(bool isActive)
 				travelPlanIsValid = true;
 				break;
 			}
+		}
 		// Otherwise, the player must still be within jump range of the next system.
 		travelPlanIsValid |= flagship->JumpNavigation().CanJump(flagship->GetSystem(), system);
 		// Other steps of the travel plan may have been invalidated as a result of the system no longer being visible.
@@ -1258,7 +1270,9 @@ void Engine::EnterSystem()
 	// Preload landscapes and determine if the player used a wormhole.
 	// (It is allowed for a wormhole's exit point to have no sprite.)
 	const StellarObject *usedWormhole = nullptr;
-	for(const StellarObject &object : system->Objects())
+	for(const StellarObject *objectPtr : system->Objects())
+	{
+		const StellarObject &object = *objectPtr;
 		if(object.HasValidPlanet())
 		{
 			GameData::Preload(queue, object.GetPlanet()->Landscape());
@@ -1266,6 +1280,7 @@ void Engine::EnterSystem()
 					&& flagship->Position().Distance(object.Position()) < 1.)
 				usedWormhole = &object;
 		}
+	}
 
 	// Advance the positions of every StellarObject and update politics.
 	// Remove expired bribes, clearance, and grace periods from past fines.
@@ -1338,8 +1353,8 @@ void Engine::EnterSystem()
 		for(const auto &hazard : system->Hazards())
 			CreateWeather(hazard, Point());
 		for(const auto &stellar : system->Objects())
-			for(const auto &hazard : stellar.Hazards())
-				CreateWeather(hazard, stellar.Position());
+			for(const auto &hazard : stellar->Hazards())
+				CreateWeather(hazard, stellar->Position());
 	}
 
 	for(const auto &raidFleet : system->RaidFleets())
@@ -1408,9 +1423,12 @@ void Engine::CalculateStep()
 
 	// The only action stellar objects perform is to launch defense fleets.
 	const System *playerSystem = player.GetSystem();
-	for(const StellarObject &object : playerSystem->Objects())
+	for(const StellarObject *objectPtr : playerSystem->Objects())
+	{
+		const StellarObject &object = *objectPtr;
 		if(object.HasValidPlanet())
 			object.GetPlanet()->DeployDefense(newShips);
+	}
 
 	// Keep track of the flagship to see if it jumps or enters a wormhole this turn.
 	const Ship *flagship = player.Flagship();
@@ -1454,11 +1472,11 @@ void Engine::CalculateStep()
 		// Wormhole travel: mark the wormhole "planet" as visited.
 		if(!wasHyperspacing)
 			for(const auto &it : playerSystem->Objects())
-				if(it.HasValidPlanet() && it.GetPlanet()->IsWormhole() &&
-						&it.GetPlanet()->GetWormhole()->WormholeDestination(*playerSystem) == flagship->GetSystem())
+				if(it->HasValidPlanet() && it->GetPlanet()->IsWormhole() &&
+						&it->GetPlanet()->GetWormhole()->WormholeDestination(*playerSystem) == flagship->GetSystem())
 				{
 					wormholeEntry = true;
-					player.Visit(*it.GetPlanet());
+					player.Visit(*it->GetPlanet());
 				}
 
 		player.SetSystemEntry(wormholeEntry ? SystemEntry::WORMHOLE :
@@ -1559,7 +1577,9 @@ void Engine::CalculateStep()
 	FillRadar();
 
 	// Draw the planets.
-	for(const StellarObject &object : playerSystem->Objects())
+	for(const StellarObject *objectPtr : playerSystem->Objects())
+	{
+		const StellarObject &object = *objectPtr;
 		if(object.HasSprite())
 		{
 			// Don't apply motion blur to very large planets and stars.
@@ -1568,6 +1588,7 @@ void Engine::CalculateStep()
 			else
 				draw[currentCalcBuffer].Add(object);
 		}
+	}
 	// Draw the asteroids and minables.
 	asteroids.Draw(draw[currentCalcBuffer], newCenter, zoom);
 	// Draw the flotsam.
@@ -1851,8 +1872,8 @@ void Engine::GenerateWeather()
 	for(const auto &hazard : player.GetSystem()->Hazards())
 		CreateWeather(hazard, Point());
 	for(const auto &stellar : player.GetSystem()->Objects())
-		for(const auto &hazard : stellar.Hazards())
-			CreateWeather(hazard, stellar.Position());
+		for(const auto &hazard : stellar->Hazards())
+			CreateWeather(hazard, stellar->Position());
 }
 
 
@@ -1982,7 +2003,9 @@ void Engine::HandleMouseClicks()
 	bool clickedPlanet = false;
 	const System *playerSystem = player.GetSystem();
 	if(!isRightClick && flagship->Zoom() == 1.)
-		for(const StellarObject &object : playerSystem->Objects())
+		for(const StellarObject *objectPtr : playerSystem->Objects())
+		{
+			const StellarObject &object = *objectPtr;
 			if(object.HasSprite() && object.HasValidPlanet())
 			{
 				// If the player clicked to land on a planet,
@@ -2008,6 +2031,7 @@ void Engine::HandleMouseClicks()
 					clickedPlanet = true;
 				}
 			}
+		}
 
 	// Check for clicks on ships in this system.
 	double clickRange = 50.;
@@ -2414,12 +2438,15 @@ void Engine::FillRadar()
 	const System *playerSystem = player.GetSystem();
 
 	// Add stellar objects.
-	for(const StellarObject &object : playerSystem->Objects())
+	for(const StellarObject *objectPtr : playerSystem->Objects())
+	{
+		const StellarObject &object = *objectPtr;
 		if(object.HasSprite())
 		{
 			double r = max(2., object.Radius() * .03 + .5);
 			radar[currentCalcBuffer].Add(object.RadarType(flagship), object.Position(), r, r - 1.);
 		}
+	}
 
 	// Add pointers for neighboring systems.
 	if(flagship)

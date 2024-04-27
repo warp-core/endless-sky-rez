@@ -627,9 +627,12 @@ bool LocationFilter::Matches(const System *system, const System *origin, bool di
 			for(const set<string> &attr : attributes)
 			{
 				bool matches = SetsIntersect(attr, system->Attributes());
-				for(const StellarObject &object : system->Objects())
+				for(const StellarObject *objectPtr : system->Objects())
+				{
+					const StellarObject &object = *objectPtr;
 					if(object.HasSprite() && object.HasValidPlanet())
 						matches |= SetsIntersect(attr, object.GetPlanet()->Attributes());
+				}
 
 				if(!matches)
 					return false;

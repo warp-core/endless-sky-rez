@@ -714,13 +714,16 @@ void AI::Step(Command &activeCommands)
 			if(it->JumpsRemaining() && (!system->Links().empty() || it->JumpNavigation().HasJumpDrive()))
 				target.reset();
 			else
-				for(const StellarObject &object : system->Objects())
+				for(const StellarObject *objectPtr : system->Objects())
+				{
+					const StellarObject &object = *objectPtr;
 					if(object.HasSprite() && object.HasValidPlanet() && object.GetPlanet()->IsInhabited()
 							&& object.GetPlanet()->CanLand(*it))
 					{
 						target.reset();
 						break;
 					}
+				}
 
 			if(target)
 				// This ship has nowhere to flee to: Stop fleeing.
@@ -1101,8 +1104,9 @@ const StellarObject *AI::FindLandingLocation(const Ship &ship, const bool refuel
 		// Determine which, if any, planet with fuel or without fuel is closest.
 		double closest = numeric_limits<double>::infinity();
 		const Point &p = ship.Position();
-		for(const StellarObject &object : system->Objects())
+		for(const StellarObject *objectPtr : system->Objects())
 		{
+			const StellarObject &object = *objectPtr;
 			const Planet *planet = object.GetPlanet();
 			if(object.HasSprite() && object.HasValidPlanet() && !planet->IsWormhole()
 					&& planet->CanLand(ship) && planet->HasFuelFor(ship) == refuel)
@@ -1738,22 +1742,28 @@ void AI::MoveIndependent(Ship &ship, Command &command) const
 		// Anywhere you can land that has a port has the same weight. Ships will
 		// not land anywhere without a port.
 		vector<const StellarObject *> planets;
-		for(const StellarObject &object : origin->Objects())
+		for(const StellarObject *objectPtr : origin->Objects())
+		{
+			const StellarObject &object = *objectPtr;
 			if(object.HasSprite() && object.HasValidPlanet() && object.GetPlanet()->HasServices()
 					&& object.GetPlanet()->CanLand(ship))
 			{
 				planets.push_back(&object);
 				totalWeight += planetWeight;
 			}
+		}
 		// If there are no ports to land on and this ship cannot jump, consider
 		// landing on uninhabited planets.
 		if(!totalWeight)
-			for(const StellarObject &object : origin->Objects())
+			for(const StellarObject *objectPtr : origin->Objects())
+			{
+				const StellarObject &object = *objectPtr;
 				if(object.HasSprite() && object.HasValidPlanet() && object.GetPlanet()->CanLand(ship))
 				{
 					planets.push_back(&object);
 					totalWeight += planetWeight;
 				}
+			}
 		if(!totalWeight)
 		{
 			// If there is nothing this ship can land on, have it just go to the
@@ -1761,7 +1771,7 @@ void AI::MoveIndependent(Ship &ship, Command &command) const
 			if(origin->Objects().empty())
 				return;
 			totalWeight = 1;
-			planets.push_back(&origin->Objects().front());
+			planets.push_back(origin->Objects().front());
 		}
 
 		set<const System *>::const_iterator it = links.begin();
@@ -1812,7 +1822,7 @@ void AI::MoveIndependent(Ship &ship, Command &command) const
 	else if(shouldStay && !ship.GetSystem()->Objects().empty())
 	{
 		unsigned i = Random::Int(origin->Objects().size());
-		ship.SetTargetStellar(&origin->Objects()[i]);
+		ship.SetTargetStellar(origin->Objects()[i]);
 	}
 	// Nowhere to go, and nothing to do, so stay near the system center.
 	else if(shouldStay)
@@ -2022,8 +2032,9 @@ void AI::SelectRoute(Ship &ship, const System *targetSystem) const
 		// Prefer wormhole travel in these cases, to conserve fuel. Must
 		// check accessibility as DistanceMap may only see the jump path.
 		if(to && !needsRefuel)
-			for(const StellarObject &object : from->Objects())
+			for(const StellarObject *objectPtr : from->Objects())
 			{
+				const StellarObject &object = *objectPtr;
 				if(!object.HasSprite() || !object.HasValidPlanet())
 					continue;
 
@@ -2828,9 +2839,12 @@ void AI::DoSurveillance(Ship &ship, Command &command, shared_ptr<Ship> &target) 
 		vector<const StellarObject *> targetPlanets;
 		double atmosphereScan = ship.Attributes().Get("atmosphere scan");
 		if(atmosphereScan)
-			for(const StellarObject &object : system->Objects())
+			for(const StellarObject *objectPtr : system->Objects())
+			{
+				const StellarObject &object = *objectPtr;
 				if(object.HasSprite() && !object.IsStar() && !object.IsStation())
 					targetPlanets.push_back(&object);
+			}
 
 		// If this ship can jump away, consider traveling to a nearby system.
 		vector<const System *> targetSystems;
@@ -3101,9 +3115,12 @@ void AI::DoPatrol(Ship &ship, Command &command) const
 		if(!ship.GetPersonality().IsStaying() && !Random::Int(10000))
 		{
 			vector<const StellarObject *> landingTargets;
-			for(const StellarObject &object : ship.GetSystem()->Objects())
+			for(const StellarObject *objectPtr : ship.GetSystem()->Objects())
+			{
+				const StellarObject &object = *objectPtr;
 				if(object.HasSprite() && object.GetPlanet() && object.GetPlanet()->CanLand(ship))
 					landingTargets.push_back(&object);
+			}
 			if(!landingTargets.empty())
 			{
 				ship.SetTargetStellar(landingTargets[Random::Int(landingTargets.size())]);
@@ -3814,7 +3831,9 @@ void AI::MovePlayer(Ship &ship, Command &activeCommands)
 	{
 		// Determine if the player is jumping to their target system or landing on a wormhole.
 		const System *system = player.TravelPlan().back();
-		for(const StellarObject &object : ship.GetSystem()->Objects())
+		for(const StellarObject *objectPtr : ship.GetSystem()->Objects())
+		{
+			const StellarObject &object = *objectPtr;
 			if(object.HasSprite() && object.HasValidPlanet() && object.GetPlanet()->IsWormhole()
 				&& object.GetPlanet()->IsAccessible(&ship) && player.HasVisited(*object.GetPlanet())
 				&& player.CanView(*system))
@@ -3828,6 +3847,7 @@ void AI::MovePlayer(Ship &ship, Command &activeCommands)
 					ship.SetTargetStellar(&object);
 				break;
 			}
+		}
 		if(!isWormhole)
 			ship.SetTargetSystem(system);
 	}
@@ -4072,8 +4092,9 @@ void AI::MovePlayer(Ship &ship, Command &activeCommands)
 		string message;
 		const bool isMovingSlowly = (ship.Velocity().Length() < (MIN_LANDING_VELOCITY / 60.));
 		const StellarObject *potentialTarget = nullptr;
-		for(const StellarObject &object : ship.GetSystem()->Objects())
+		for(const StellarObject *objectPtr : ship.GetSystem()->Objects())
 		{
+			const StellarObject &object = *objectPtr;
 			if(!object.HasSprite())
 				continue;
 

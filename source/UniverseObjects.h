@@ -133,6 +133,7 @@ private:
 
 	Set<Description> descriptions;
 	Set<Weapon> weapons;
+	Set<StellarObject> stellarObjects;
 
 	Gamerules gamerules;
 	TextReplacements substitutions;

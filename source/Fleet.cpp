@@ -249,11 +249,14 @@ void Fleet::Enter(const System &system, list<shared_ptr<Ship>> &ships, const Pla
 		// Find all the inhabited planets this fleet could take off from.
 		vector<const StellarObject *> stellarVector;
 		if(!personality.IsSurveillance())
-			for(const StellarObject &object : system.Objects())
+			for(const StellarObject *objectPtr : system.Objects())
+			{
+				const StellarObject &object = *objectPtr;
 				if(object.HasValidPlanet() && object.GetPlanet()->IsInhabited()
 						&& (unrestricted || !government->IsRestrictedFrom(*object.GetPlanet()))
 						&& !object.GetPlanet()->GetGovernment()->IsEnemy(government))
 					stellarVector.push_back(&object);
+			}
 
 		// If there is nowhere for this fleet to come from, don't create it.
 		size_t options = linkVector.size() + stellarVector.size();
@@ -261,11 +264,14 @@ void Fleet::Enter(const System &system, list<shared_ptr<Ship>> &ships, const Pla
 		{
 			// Prefer to launch from inhabited planets, but launch from
 			// uninhabited ones if there is no other option.
-			for(const StellarObject &object : system.Objects())
+			for(const StellarObject *objectPtr : system.Objects())
+			{
+				const StellarObject &object = *objectPtr;
 				if(object.HasValidPlanet()
 						&& (unrestricted || !government->IsRestrictedFrom(*object.GetPlanet()))
 						&& !object.GetPlanet()->GetGovernment()->IsEnemy(government))
 					stellarVector.push_back(&object);
+			}
 			options = stellarVector.size();
 			if(!options)
 				return;
@@ -302,9 +308,12 @@ void Fleet::Enter(const System &system, list<shared_ptr<Ship>> &ships, const Pla
 			// If there are many possible candidates (for example for ringworlds),
 			// then choose a random one.
 			vector<const StellarObject *> stellarObjects;
-			for(const auto &object : system.Objects())
+			for(const StellarObject *objectPtr : system.Objects())
+			{
+				const StellarObject &object = *objectPtr;
 				if(object.GetPlanet() == planet)
 					stellarObjects.push_back(&object);
+			}
 
 			// If the source planet isn't in the source for some reason, bail out.
 			if(stellarObjects.empty())
@@ -489,9 +498,12 @@ int64_t Fleet::Strength() const
 pair<Point, double> Fleet::ChooseCenter(const System &system)
 {
 	auto centers = vector<pair<Point, double>>();
-	for(const StellarObject &object : system.Objects())
+	for(const StellarObject *objectPtr : system.Objects())
+	{
+		const StellarObject &object = *objectPtr;
 		if(object.HasValidPlanet() && object.GetPlanet()->IsInhabited())
 			centers.emplace_back(object.Position(), object.Radius());
+	}
 
 	if(centers.empty())
 		return {Point(), 0.};

@@ -755,6 +755,13 @@ const Set<Weapon> &GameData::Weapons()
 
 
 
+const Set<StellarObject> &GameData::StellarObjects()
+{
+	return objects.stellarObjects;
+}
+
+
+
 const Government *GameData::PlayerGovernment()
 {
 	return playerGovernment;

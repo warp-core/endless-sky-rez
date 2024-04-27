@@ -141,7 +141,9 @@ namespace {
 	bool HasMultipleLandablePlanets(const System &system)
 	{
 		const Planet *firstPlanet = nullptr;
-		for(auto &&stellarObject : system.Objects())
+		for(const StellarObject *objectPtr : system.Objects())
+		{
+			const StellarObject &stellarObject = *objectPtr;
 			if(stellarObject.HasValidPlanet() && stellarObject.HasSprite() && !stellarObject.GetPlanet()->IsWormhole())
 			{
 				// We can return true once we found 2 different landable planets.
@@ -150,6 +152,7 @@ namespace {
 				else if(firstPlanet != stellarObject.GetPlanet())
 					return true;
 			}
+		}
 
 		return false;
 	}
@@ -901,7 +904,9 @@ bool MapPanel::GetTravelInfo(const System *previous, const System *next, const d
 	isMappable = false;
 	// Short-circuit the loop for MissionPanel, which draws hyperlinks and wormholes the same.
 	if(!isHyper || wormholeColor)
-		for(const StellarObject &object : previous->Objects())
+		for(const StellarObject *objectPtr : previous->Objects())
+		{
+			const StellarObject &object = *objectPtr;
 			if(object.HasSprite() && object.HasValidPlanet()
 				&& object.GetPlanet()->IsWormhole()
 				&& player.HasVisited(*object.GetPlanet())
@@ -917,6 +922,7 @@ bool MapPanel::GetTravelInfo(const System *previous, const System *next, const d
 					break;
 				}
 			}
+		}
 	isJump = !isHyper && !isWormhole && previous->JumpNeighbors(jumpRange).count(next);
 	return isHyper || isWormhole || isJump;
 }
@@ -1010,17 +1016,23 @@ void MapPanel::UpdateCache()
 				else if(commodity == SHOW_SHIPYARD)
 				{
 					double size = 0;
-					for(const StellarObject &object : system.Objects())
+					for(const StellarObject *objectPtr : system.Objects())
+					{
+						const StellarObject &object = *objectPtr;
 						if(object.HasSprite() && object.HasValidPlanet())
 							size += object.GetPlanet()->Shipyard().size();
+					}
 					value = size ? min(10., size) / 10. : -1.;
 				}
 				else if(commodity == SHOW_OUTFITTER)
 				{
 					double size = 0;
-					for(const StellarObject &object : system.Objects())
+					for(const StellarObject *objectPtr : system.Objects())
+					{
+						const StellarObject &object = *objectPtr;
 						if(object.HasSprite() && object.HasValidPlanet())
 							size += object.GetPlanet()->Outfitter().size();
+					}
 					value = size ? min(60., size) / 60. : -1.;
 				}
 				else if(commodity == SHOW_VISITED)
@@ -1028,7 +1040,9 @@ void MapPanel::UpdateCache()
 					bool all = true;
 					bool some = false;
 					colorSystem = false;
-					for(const StellarObject &object : system.Objects())
+					for(const StellarObject *objectPtr : system.Objects())
+					{
+						const StellarObject &object = *objectPtr;
 						if(object.HasSprite() && object.HasValidPlanet() && !object.GetPlanet()->IsWormhole()
 							&& object.GetPlanet()->IsAccessible(player.Flagship()))
 						{
@@ -1037,6 +1051,7 @@ void MapPanel::UpdateCache()
 							some |= visited;
 							colorSystem = true;
 						}
+					}
 					value = -1 + some + all;
 				}
 				else
@@ -1070,7 +1085,9 @@ void MapPanel::UpdateCache()
 				bool isInhabited = false;
 				bool canLand = false;
 				bool hasSpaceport = false;
-				for(const StellarObject &object : system.Objects())
+				for(const StellarObject *objectPtr : system.Objects())
+				{
+					const StellarObject &object = *objectPtr;
 					if(object.HasSprite() && object.HasValidPlanet())
 					{
 						const Planet *planet = object.GetPlanet();
@@ -1082,6 +1099,7 @@ void MapPanel::UpdateCache()
 						hasDominated &= (!planet->IsInhabited()
 							|| GameData::GetPolitics().HasDominated(planet));
 					}
+				}
 				hasDominated &= (isInhabited && canLand);
 				// Some systems may count as "inhabited" but not contain any
 				// planets with spaceports. Color those as if they're

@@ -21,6 +21,7 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include "RandomEvent.h"
 
 class Planet;
+class Resource;
 class Ship;
 
 
@@ -33,6 +34,8 @@ class Ship;
 class StellarObject : public Body {
 public:
 	StellarObject();
+
+	void Load(const Resource &res);
 
 	// Functions provided by the Body base class:
 	// bool HasSprite() const;

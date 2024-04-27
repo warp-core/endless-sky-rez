@@ -200,12 +200,15 @@ void DistanceMap::Init(const Ship *ship)
 		if(!jumpFuel && !hyperspaceFuel)
 		{
 			bool hasWormhole = false;
-			for(const StellarObject &object : ship->GetSystem()->Objects())
+			for(const StellarObject *objectPtr : ship->GetSystem()->Objects())
+			{
+				const StellarObject &object = *objectPtr;
 				if(object.HasSprite() && object.HasValidPlanet() && object.GetPlanet()->IsWormhole())
 				{
 					hasWormhole = true;
 					break;
 				}
+			}
 
 			if(!hasWormhole)
 				return;
@@ -235,7 +238,9 @@ void DistanceMap::Init(const Ship *ship)
 		// Check for wormholes (which cost zero fuel). Wormhole travel should
 		// not be included in Local Maps or mission itineraries.
 		if(wormholeStrategy != WormholeStrategy::NONE)
-			for(const StellarObject &object : top.next->Objects())
+			for(const StellarObject *objectPtr : top.next->Objects())
+			{
+				const StellarObject &object = *objectPtr;
 				if(object.HasSprite() && object.HasValidPlanet() && object.GetPlanet()->IsWormhole()
 					&& (object.GetPlanet()->IsUnrestricted() || wormholeStrategy == WormholeStrategy::ALL))
 				{
@@ -262,6 +267,7 @@ void DistanceMap::Init(const Ship *ship)
 
 					Add(link, top);
 				}
+			}
 
 		// Bail out if the maximum number of systems is reached.
 		if(hyperspaceFuel && !Propagate(top, false))

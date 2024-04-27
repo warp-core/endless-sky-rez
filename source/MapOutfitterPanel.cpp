@@ -144,7 +144,9 @@ double MapOutfitterPanel::SystemValue(const System *system) const
 	// Visiting a system is sufficient to know what ports are available on its planets.
 	double value = -1.;
 	const auto &planetStorage = player.PlanetaryStorage();
-	for(const StellarObject &object : system->Objects())
+	for(const StellarObject *objectPtr : system->Objects())
+	{
+		const StellarObject &object = *objectPtr;
 		if(object.HasSprite() && object.HasValidPlanet())
 		{
 			const auto storage = planetStorage.find(object.GetPlanet());
@@ -156,6 +158,7 @@ double MapOutfitterPanel::SystemValue(const System *system) const
 			if(!outfitter.empty())
 				value = 0.;
 		}
+	}
 	return value;
 }
 
@@ -229,8 +232,9 @@ void MapOutfitterPanel::DrawItems()
 				isForSale = false;
 				const auto &storage = player.PlanetaryStorage();
 
-				for(const StellarObject &object : selectedSystem->Objects())
+				for(const StellarObject *objectPtr : selectedSystem->Objects())
 				{
+					const StellarObject &object = *objectPtr;
 					if(!object.HasSprite() || !object.HasValidPlanet())
 						continue;
 

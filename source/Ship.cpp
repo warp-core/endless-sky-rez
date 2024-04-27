@@ -4137,13 +4137,16 @@ bool Ship::DoHyperspaceLogic(vector<Visual> &visuals)
 				target = targetPlanet->Position();
 			else
 			{
-				for(const StellarObject &object : currentSystem->Objects())
+				for(const StellarObject *objectPtr : currentSystem->Objects())
+				{
+					const StellarObject &object = *objectPtr;
 					if(object.HasSprite() && object.HasValidPlanet()
 							&& object.GetPlanet()->HasServices())
 					{
 						target = object.Position();
 						break;
 					}
+				}
 			}
 		}
 
@@ -4241,9 +4244,12 @@ bool Ship::DoLandingLogic()
 			if(landingPlanet->IsWormhole())
 			{
 				SetSystem(&landingPlanet->GetWormhole()->WormholeDestination(*currentSystem));
-				for(const StellarObject &object : currentSystem->Objects())
+				for(const StellarObject *objectPtr : currentSystem->Objects())
+				{
+					const StellarObject &object = *objectPtr;
 					if(object.GetPlanet() == landingPlanet)
 						position = object.Position();
+				}
 				SetTargetStellar(nullptr);
 				SetTargetSystem(nullptr);
 				landingPlanet = nullptr;

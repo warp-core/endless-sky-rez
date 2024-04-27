@@ -151,7 +151,9 @@ double MapShipyardPanel::SystemValue(const System *system) const
 	{
 		// Visiting a system is sufficient to know what ports are available on its planets.
 		double value = -1.;
-		for(const StellarObject &object : system->Objects())
+		for(const StellarObject *objectPtr : system->Objects())
+		{
+			const StellarObject &object = *objectPtr;
 			if(object.HasSprite() && object.HasValidPlanet())
 			{
 				const auto &shipyard = object.GetPlanet()->Shipyard();
@@ -160,6 +162,7 @@ double MapShipyardPanel::SystemValue(const System *system) const
 				if(!shipyard.empty())
 					value = 0.;
 			}
+		}
 		return value;
 	}
 	else if(systemShips != parkedShips.end() && !selected)
@@ -219,8 +222,8 @@ void MapShipyardPanel::DrawItems()
 			if(player.CanView(*selectedSystem))
 			{
 				isForSale = false;
-				for(const StellarObject &object : selectedSystem->Objects())
-					if(object.HasSprite() && object.HasValidPlanet() && object.GetPlanet()->Shipyard().Has(ship))
+				for(const StellarObject *object : selectedSystem->Objects())
+					if(object->HasSprite() && object->HasValidPlanet() && object->GetPlanet()->Shipyard().Has(ship))
 					{
 						isForSale = true;
 						break;

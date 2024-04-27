@@ -30,6 +30,7 @@ class Fleet;
 class Government;
 class Outfit;
 class PlayerInfo;
+class Resource;
 class Ship;
 class Sprite;
 class System;
@@ -54,6 +55,7 @@ public:
 public:
 	// Load a planet's description from a file.
 	void Load(const DataNode &node, Set<Wormhole> &wormholes);
+	void Load(const Resource &res);
 	// Legacy wormhole do not have an associated Wormhole object so
 	// we must auto generate one if we detect such legacy wormhole.
 	void FinishLoading(Set<Wormhole> &wormholes);
@@ -159,6 +161,8 @@ public:
 private:
 	bool isDefined = false;
 	std::string name;
+	std::string trueName;
+	int id = 0;
 	std::string description;
 	Port port;
 	const Sprite *landscape = nullptr;

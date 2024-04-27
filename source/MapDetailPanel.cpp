@@ -493,7 +493,9 @@ void MapDetailPanel::GeneratePlanetCards(const System &system)
 	SetScroll(0.);
 	unsigned number = 0;
 	MapPlanetCard::ResetSize();
-	for(const StellarObject &object : system.Objects())
+	for(const StellarObject *objectPtr : system.Objects())
+	{
+		const StellarObject &object = *objectPtr;
 		if(object.HasSprite() && object.HasValidPlanet())
 		{
 			// The same "planet" may appear multiple times in one system,
@@ -506,6 +508,7 @@ void MapDetailPanel::GeneratePlanetCards(const System &system)
 			shown.insert(planet);
 			++number;
 		}
+	}
 	shownSystem = &system;
 }
 
@@ -856,14 +859,15 @@ void MapDetailPanel::DrawOrbits()
 
 	// Figure out what the largest orbit in this system is.
 	double maxDistance = 0.;
-	for(const StellarObject &object : selectedSystem->Objects())
+	for(const StellarObject *objectPtr : selectedSystem->Objects())
 	{
+		const StellarObject &object = *objectPtr;
 		double distance = object.Distance();
 		int activeParent = object.Parent();
 		while(activeParent >= 0)
 		{
-			distance += selectedSystem->Objects()[activeParent].Distance();
-			activeParent = selectedSystem->Objects()[activeParent].Parent();
+			distance += selectedSystem->Objects()[activeParent]->Distance();
+			activeParent = selectedSystem->Objects()[activeParent]->Parent();
 		}
 		maxDistance = max(maxDistance, distance);
 	}
@@ -884,15 +888,16 @@ void MapDetailPanel::DrawOrbits()
 		Color(.2, .2, .2, 1.),
 		Color(1., 1., 1., 1.)
 	};
-	for(const StellarObject &object : selectedSystem->Objects())
+	for(const StellarObject *objectPtr : selectedSystem->Objects())
 	{
+		const StellarObject &object = *objectPtr;
 		if(object.Radius() <= 0.)
 			continue;
 
 		Point parentPos;
 		int habit = 5;
 		if(object.Parent() >= 0)
-			parentPos = selectedSystem->Objects()[object.Parent()].Position();
+			parentPos = selectedSystem->Objects()[object.Parent()]->Position();
 		else
 		{
 			double warmth = object.Distance() / selectedSystem->HabitableZone();
@@ -906,8 +911,9 @@ void MapDetailPanel::DrawOrbits()
 	}
 
 	// Draw the planets themselves.
-	for(const StellarObject &object : selectedSystem->Objects())
+	for(const StellarObject *objectPtr : selectedSystem->Objects())
 	{
+		const StellarObject &object = *objectPtr;
 		if(object.Radius() <= 0.)
 			continue;
 
@@ -955,11 +961,14 @@ void MapDetailPanel::DrawOrbits()
 	}
 
 	// Draw the selection ring on top of everything else.
-	for(const StellarObject &object : selectedSystem->Objects())
+	for(const StellarObject *objectPtr : selectedSystem->Objects())
+	{
+		const StellarObject &object = *objectPtr;
 		if(selectedPlanet && object.GetPlanet() == selectedPlanet)
 			RingShader::Draw(orbitCenter + object.Position() * scale,
 				object.Radius() * scale + 5., object.Radius() * scale + 4.,
 				habitColor[6]);
+	}
 
 	// Draw the name of the selected planet.
 	const string &name = selectedPlanet ? selectedPlanet->Name() : selectedSystem->Name();

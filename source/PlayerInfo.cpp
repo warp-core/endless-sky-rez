@@ -851,7 +851,9 @@ const StellarObject *PlayerInfo::GetStellarObject() const
 
 	double closestDistance = numeric_limits<double>::infinity();
 	const StellarObject *closestObject = nullptr;
-	for(const StellarObject &object : system->Objects())
+	for(const StellarObject *objectPtr : system->Objects())
+	{
+		const StellarObject &object = *objectPtr;
 		if(object.GetPlanet() == planet)
 		{
 			if(!Flagship())
@@ -864,6 +866,7 @@ const StellarObject *PlayerInfo::GetStellarObject() const
 				closestObject = &object;
 			}
 		}
+	}
 	return closestObject;
 }
 
@@ -2491,9 +2494,9 @@ void PlayerInfo::Visit(const Planet &planet)
 void PlayerInfo::Unvisit(const System &system)
 {
 	visitedSystems.erase(&system);
-	for(const StellarObject &object : system.Objects())
-		if(object.GetPlanet())
-			Unvisit(*object.GetPlanet());
+	for(const StellarObject *object : system.Objects())
+		if(object->GetPlanet())
+			Unvisit(*object->GetPlanet());
 }
 
 
@@ -3669,8 +3672,9 @@ void PlayerInfo::RegisterDerivedConditions()
 		else
 		{
 			int64_t retVal = 0;
-			for(const StellarObject &object : system->Objects())
+			for(const StellarObject *objectPtr : system->Objects())
 			{
+				const StellarObject &object = *objectPtr;
 				auto it = planetaryStorage.find(object.GetPlanet());
 				if(object.HasValidPlanet() && it != planetaryStorage.end())
 					retVal += it->second.Get(outfit);

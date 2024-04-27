@@ -489,7 +489,7 @@ void System::Load(const DataNode &node, Set<Planet> &planets)
 
 
 
-void System::Load(const Resource &res)
+void System::Load(const Resource &res, Set<Planet> &planets)
 {
 	isDefined = true;
 	hasPosition = true;
@@ -510,8 +510,15 @@ void System::Load(const Resource &res)
 		string linkString = Resource::IDToString(linkId);
 		links.insert(GameData().Systems().Get(linkString));
 	}
-	int16_t stellars[16];
-	memcpy(stellars, data.ReadBytes(32).data(), 32);
+	for(int i = 0; i < 16; ++i)
+	{
+		int16_t stellarID = data.ReadSignedShort();
+		if(stellarID < 0)
+			continue;
+		string stellarString = Resource::IDToString(stellarID);
+		rezObjects.emplace_back(const_cast<StellarObject *>(GameData::StellarObjects().Get(stellarString)));
+		planets.Get(stellarString)->SetSystem(this);
+	}
 	int16_t dudeTypes[8];
 	memcpy(dudeTypes, data.ReadBytes(16).data(), 16);
 	int16_t dudeProbabilities[8];
@@ -813,9 +820,14 @@ void System::SetDate(const Date &date)
 
 
 // Get the stellar object locations on the most recently set date.
-const vector<StellarObject> &System::Objects() const
+const vector<const StellarObject *> System::Objects() const
 {
-	return objects;
+	vector<const StellarObject *> result;
+	for(const StellarObject &object : objects)
+		result.emplace_back(&object);
+	for(const StellarObject *object : rezObjects)
+		result.emplace_back(object);
+	return result;
 }
 
 
@@ -824,9 +836,14 @@ const vector<StellarObject> &System::Objects() const
 const StellarObject *System::FindStellar(const Planet *planet) const
 {
 	if(planet)
+	{
 		for(const StellarObject &object : objects)
 			if(object.GetPlanet() == planet)
 				return &object;
+		for(const StellarObject *object : rezObjects)
+			if(object->GetPlanet() == planet)
+				return object;
+	}
 
 	return nullptr;
 }
@@ -905,6 +922,13 @@ bool System::IsInhabited(const Ship *ship) const
 			if(!planet.IsWormhole() && planet.IsInhabited() && planet.IsAccessible(ship))
 				return true;
 		}
+	for(const StellarObject *object : rezObjects)
+		if(object->HasSprite() && object->HasValidPlanet())
+		{
+			const Planet &planet = *object->GetPlanet();
+			if(!planet.IsWormhole() && planet.IsInhabited() && planet.IsAccessible(ship))
+				return true;
+		}
 
 	return false;
 }
@@ -916,6 +940,9 @@ bool System::HasFuelFor(const Ship &ship) const
 {
 	for(const StellarObject &object : objects)
 		if(object.HasSprite() && object.HasValidPlanet() && object.GetPlanet()->HasFuelFor(ship))
+			return true;
+	for(const StellarObject *object : rezObjects)
+		if(object->HasSprite() && object->HasValidPlanet() && object->GetPlanet()->HasFuelFor(ship))
 			return true;
 
 	return false;
@@ -929,6 +956,9 @@ bool System::HasShipyard() const
 	for(const StellarObject &object : objects)
 		if(object.HasSprite() && object.HasValidPlanet() && object.GetPlanet()->HasShipyard())
 			return true;
+	for(const StellarObject *object : rezObjects)
+		if(object->HasSprite() && object->HasValidPlanet() && object->GetPlanet()->HasShipyard())
+			return true;
 
 	return false;
 }
@@ -940,6 +970,9 @@ bool System::HasOutfitter() const
 {
 	for(const StellarObject &object : objects)
 		if(object.HasSprite() && object.HasValidPlanet() && object.GetPlanet()->HasOutfitter())
+			return true;
+	for(const StellarObject *object : rezObjects)
+		if(object->HasSprite() && object->HasValidPlanet() && object->GetPlanet()->HasOutfitter())
 			return true;
 
 	return false;
