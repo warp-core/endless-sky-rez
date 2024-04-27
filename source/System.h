@@ -36,6 +36,7 @@ class Government;
 class Minable;
 class Planet;
 class PlayerInfo;
+class Resource;
 class Ship;
 class Sprite;
 
@@ -71,6 +72,7 @@ public:
 public:
 	// Load a system's description.
 	void Load(const DataNode &node, Set<Planet> &planets);
+	void Load(const Resource &res);
 	// Update any information about the system that may have changed due to events,
 	// e.g. neighbors, solar wind and power, or if the system is inhabited.
 	void UpdateSystem(const Set<System> &systems, const std::set<double> &neighborDistances,

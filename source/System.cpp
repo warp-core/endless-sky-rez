@@ -27,6 +27,8 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include "Planet.h"
 #include "PlayerInfo.h"
 #include "Random.h"
+#include "rez/Resource.h"
+#include "rez/ResourceFileStream.h"
 #include "SpriteSet.h"
 
 #include <algorithm>
@@ -483,6 +485,56 @@ void System::Load(const DataNode &node, Set<Planet> &planets)
 	// Systems without an asteroid belt defined default to a radius of 1500.
 	if(belts.empty())
 		belts.emplace_back(1, 1500.);
+}
+
+
+
+void System::Load(const Resource &res)
+{
+	isDefined = true;
+	hasPosition = true;
+
+	name = res.Name();
+	trueName = Resource::IDToString(res.ID());
+
+	ResourceFileStream data(vector<char>(res.Data()));
+
+	position.X() = 2. * data.ReadSignedShort() + 2000.;
+	position.Y() = 2. * data.ReadSignedShort() + 2000.;
+
+	for(int i = 0; i < 16; ++i)
+	{
+		int16_t linkId = data.ReadSignedShort();
+		if(linkId < 0)
+			continue;
+		string linkString = Resource::IDToString(linkId);
+		links.insert(GameData().Systems().Get(linkString));
+	}
+	int16_t stellars[16];
+	memcpy(stellars, data.ReadBytes(32).data(), 32);
+	int16_t dudeTypes[8];
+	memcpy(dudeTypes, data.ReadBytes(16).data(), 16);
+	int16_t dudeProbabilities[8];
+	memcpy(dudeProbabilities, data.ReadBytes(16).data(), 16);
+	int16_t averageShipCount = data.ReadSignedShort();
+	int16_t governmentID = data.ReadSignedShort();
+	if(governmentID < 0)
+		government = GameData::Governments().Get("Independent");
+	else
+		government = GameData::Governments().Get(Resource::IDToString(governmentID));
+	int16_t messageID = data.ReadSignedShort();
+	int16_t asteroidCount = data.ReadSignedShort();
+	int16_t staticIntensity = data.ReadSignedShort();
+	// Skip pers related fields.
+	data.Move(32);
+	uint32_t backgroundColour = data.ReadLong();
+	int16_t murk = data.ReadSignedShort();
+	uint16_t asteroidTypes = data.ReadShort();
+	char visibility[256];
+	memcpy(visibility, data.ReadBytes(256).data(), 256);
+	int16_t reinforcementFleet = data.ReadSignedShort();
+	int16_t reinforcementTime = data.ReadSignedShort();
+	int16_t reinforcementInterval = data.ReadSignedShort();
 }
 
 

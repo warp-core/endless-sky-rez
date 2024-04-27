@@ -513,7 +513,10 @@ void UniverseObjects::LoadRezFile(const string &path, bool debugMode)
 	for(const ResourceType &type : data)
 	{
 		const string &code = type.GetCodeString();
-		if(code == "govt")
+		if(code == "syst")
+			for(const Resource &resource : type)
+				systems.Get(Resource::IDToString(resource.ID()))->Load(resource);
+		else if(code == "govt")
 			for(const Resource &resource : type)
 				governments.Get(Resource::IDToString(resource.ID()))->Load(resource);
 	}
