@@ -55,7 +55,7 @@ void StellarObject::Load(const Resource &res)
 	distance = pos.Length();
 	offset = Angle(pos).Degrees();
 
-	SetSprite(SpriteSet::Get(Resource::IDToString(data.ReadSignedShort())));
+	SetSprite(SpriteSet::Get("planet/" + Resource::IDToString(data.ReadSignedShort())));
 
 	uint32_t flags1 = data.ReadLong();
 	{
