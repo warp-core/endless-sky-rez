@@ -22,6 +22,8 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include "Outfit.h"
 #include "Phrase.h"
 #include "Politics.h"
+#include "rez/Resource.h"
+#include "rez/ResourceFileStream.h"
 #include "Ship.h"
 #include "ShipEvent.h"
 
@@ -75,6 +77,26 @@ namespace {
 	}
 
 	unsigned nextID = 0;
+
+	class GovernmentClasses {
+	public:
+		static void JoinClass(const string &classID, unsigned govID)
+		{
+			lock_guard<mutex> lock(classGuard);
+			classes[classID].insert(govID);
+		}
+
+		static set<unsigned> &GetClass(const string &classID)
+		{
+			lock_guard<mutex> lock(classGuard);
+			return classes[classID];
+		}
+
+
+	private:
+		static mutex classGuard;
+		static map<string, set<unsigned>> classes;
+	};
 }
 
 
@@ -414,6 +436,75 @@ void Government::Load(const DataNode &node)
 
 
 
+void Government::Load(const Resource &res)
+{
+	name = Resource::IDToString(res.ID());
+	displayName = res.Name();
+
+	ResourceFileStream data(vector<char>(res.Data()));
+
+	int16_t voiceType = data.ReadSignedShort();
+	uint16_t flags1 = data.ReadShort();
+	uint16_t flags2 = data.ReadShort();
+	int16_t scanFine = data.ReadSignedShort();
+	int16_t crimeTolerance = data.ReadSignedShort();
+	int16_t smugglingPenalty = data.ReadSignedShort();
+
+	penaltyFor[ShipEvent::DISABLE] = data.ReadSignedShort() / 10;
+	penaltyFor[ShipEvent::BOARD] = data.ReadSignedShort() / 10;
+	penaltyFor[ShipEvent::DESTROY] = data.ReadSignedShort() / 10;
+	penaltyFor[ShipEvent::PROVOKE] = data.ReadSignedShort() / 10;
+
+	initialPlayerReputation = data.ReadSignedShort();
+
+	int16_t maxOdds = data.ReadSignedShort();
+
+	for(int i = 0; i < 4; ++i)
+	{
+		string classID = Resource::IDToString(data.ReadSignedShort());
+		classes.insert(classID);
+		GovernmentClasses::JoinClass(classID, id);
+	}
+	for(int i = 0; i < 4; ++i)
+		alliedClasses.insert(Resource::IDToString(data.ReadSignedShort()));
+	for(int i = 0; i < 4; ++i)
+		enemyClasses.insert(Resource::IDToString(data.ReadSignedShort()));
+
+	int16_t skillMultiplier = data.ReadSignedShort();
+	char scanMask[2];
+	for(int i = 0; i < 2; ++i)
+		scanMask[i] = data.ReadByte();
+	char commName[16];
+	for(int i = 0; i < 16; ++i)
+		commName[i] = data.ReadByte();
+	char targetName[16];
+	for(int i = 0; i < 16; ++i)
+		targetName[i] = data.ReadByte();
+	char require[8];
+	for(int i = 0; i < 8; ++i)
+		require[i] = data.ReadByte();
+	int16_t inherentJamming[4];
+	for(int i = 0; i < 4; ++i)
+		inherentJamming[i] = data.ReadSignedShort();
+	char mediumName[64];
+	for(int i = 0; i < 64; ++i)
+		mediumName[i] = data.ReadByte();
+
+	{
+		uint32_t colour = data.ReadLong();
+		float r = ((colour & 0x00FF0000) >> 16) / 255.f;
+		float g = ((colour & 0x0000FF00) >> 8) / 255.f;
+		float b = (colour & 0x000000FF) / 255.f;
+		color = ExclusiveItem<Color>(Color(r, g, b, 1.f));
+	}
+
+	uint32_t shipColour = data.ReadLong();
+	int16_t interface = data.ReadSignedShort();
+	int16_t newsPicture = data.ReadSignedShort();
+}
+
+
+
 // Get the display name of this government.
 const string &Government::GetName() const
 {
@@ -461,6 +552,13 @@ double Government::AttitudeToward(const Government *other) const
 		return 0.;
 	if(other == this)
 		return 1.;
+
+	for(const string &alliedClass : alliedClasses)
+		if(GovernmentClasses::GetClass(alliedClass).count(other->id))
+			return .5;
+	for(const string &enemyClass : enemyClasses)
+		if(GovernmentClasses::GetClass(enemyClass).count(other->id))
+			return -.5;
 
 	if(attitudeToward.size() <= other->id)
 		return defaultAttitude;

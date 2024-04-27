@@ -35,6 +35,7 @@ class Phrase;
 class Planet;
 class PlayerInfo;
 class Outfit;
+class Resource;
 class Ship;
 class System;
 
@@ -53,6 +54,7 @@ public:
 
 	// Load a government's definition from a file.
 	void Load(const DataNode &node);
+	void Load(const Resource &res);
 
 	// Get the display name of this government.
 	const std::string &GetName() const;
@@ -153,6 +155,10 @@ private:
 	std::string displayName;
 	int swizzle = 0;
 	ExclusiveItem<Color> color;
+
+	std::set<string> classes;
+	std::set<string> alliedClasses;
+	std::set<string> enemyClasses;
 
 	std::vector<double> attitudeToward;
 	double defaultAttitude = 0.;
