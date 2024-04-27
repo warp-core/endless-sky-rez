@@ -66,6 +66,7 @@ class Test;
 class TestData;
 class TextReplacements;
 class UniverseObjects;
+class Weapon;
 class Wormhole;
 
 
