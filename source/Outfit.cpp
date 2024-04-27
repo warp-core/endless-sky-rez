@@ -20,6 +20,8 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include "DataNode.h"
 #include "Effect.h"
 #include "GameData.h"
+#include "rez/Resource.h"
+#include "rez/ResourceFileStream.h"
 #include "SpriteSet.h"
 
 #include <algorithm>
@@ -364,6 +366,171 @@ void Outfit::Load(const DataNode &node)
 	};
 	convertScan("outfit");
 	convertScan("cargo");
+}
+
+
+
+void Outfit::Load(const Resource &resource)
+{
+	isDefined = true;
+	trueName = Resource::IDToString(resource.ID());
+	displayName = resource.Name();
+	ResourceFileStream data(resource.Data());
+
+	int16_t displayWeight = data.ReadSignedShort();
+	mass = data.ReadSignedShort();
+	int16_t techLevel = data.ReadSignedShort();
+
+	struct Modification {
+		int16_t type = 0;
+		int16_t value = 0;
+	};
+
+	Modification mods[4];
+	mods[0] = {data.ReadSignedShort(), data.ReadSignedShort()};
+
+	int16_t maxCount = data.ReadSignedShort();
+	uint16_t flags = data.ReadShort();
+	cost = data.ReadSignedLong();
+
+	{
+		// 0x0001: gun.
+		// 0x0002: turret.
+		// 0x0004: persistent.
+		// 0x0008: unsellable.
+		// 0x0010: remove items of this type on purchase.
+		// 0x0020: persists through mission ship changes.
+		// 0x0100: don't show if required bits not met.
+		// 0x0200: price is proportional to ship mass.
+		// 0x0400: mass is proportional to ship mass (at purchase).
+		// 0x0800: can be sold anywhere, regardless of tech level, requirements, or mission bits.
+		// 0x1000: exclusive availability with higher numbered items of samme display weight.
+		// 0x2000: appears in ranks section, instead of extras section.
+		// 0x4000: only show item if availability is true.
+	}
+
+	for(int i = 1; i < 4; ++i)
+		mods[i] = {data.ReadSignedShort(), data.ReadSignedShort()};
+
+	bool isWeapon = mods[0].type == 1;
+	bool isAmmo = mods[0].type == 3;
+	if(isWeapon || isAmmo)
+		rezWeapon = GameData::Weapons().Get(Resource::IDToString(mods[0].value));
+
+	for(int i = isWeapon || isAmmo; i < 4; ++i)
+	{
+		int type = mods[i].type;
+		int value = mods[i].value;
+
+		if(type == 2)
+			attributes["cargo space"] += value;
+		else if(type == 4)
+			attributes["shields"] += value;
+		else if(type == 5)
+			attributes["shield generation"] += value / 2000.;
+		else if(type == 6)
+			attributes["hull"] += value;
+		// 7: increases acceleration.
+		// 8: increases speed.
+		// 9: increases turn rate, 100 = 30°/s.
+		// 10: unused.
+		// 11: escape pod.
+		else if(type == 12)
+			attributes["fuel capacity"] += value;
+		// 13: density scanner.
+		// 14: IFF (colourised radar).
+		else if(type == 15)
+			attributes["afterburner fuel"] += value / 60.;
+		// 16: map.
+		else if(type == 17)
+		{
+			attributes["cloak"] += .01;
+			// 0x0001: faster fading.
+			// 0x0002: visible on radar.
+			// 0x0004: immediatelly drops shields.
+			// 0x0008: cloak deactivates when taking damage.
+			uint8_t fuelPerSecond = (value & 0x00F0) >> 4;
+			attributes["cloaking fuel"] += fuelPerSecond / 60.;
+			uint8_t shieldPerSecond = (value & 0x0F00) >> 8;
+			attributes["cloaking shields"] += shieldPerSecond / 60.;
+			// 0x1000: cloaks other ships in formation.
+		}
+		else if(type == 18)
+			attributes["fuel generation"] = 0.5 / value;
+		// 19: auto-refueller.
+		// 20: auto-eject.
+		// 21: clean legal record.
+		// 22: hyperspace day modification.
+		// 23: departure distance modification.
+		// 24: interference modification.
+		// 25: marines.
+		// 26: ignored.
+		// 27: increase maximum number of outfit.
+		// 28: murk modification.
+		else if(type == 29)
+			attributes["hull repair rate"] += value / 500.;
+		// 30: cloak scanner.
+		//    1: show cloaked ships on radar.
+		//    2: show cloaked ships on screen.
+		//    4: allow targeting untargetable ships.
+		//    8: allow targeting cloaked ships.
+		// 31: mining scoop.
+		// 32: multi-jump.
+		// 33-36: jamming types 1-4.
+		else if(type == 37)
+		{
+			attributes["hyperdrive"] == 1;
+			attributes["scram drive"] += .2;
+		}
+		// 38: inertialess.
+		// 39: ion dissipator, 100 = 30/s.
+		// 40: increases ionisation capacity.
+		// 41: gravity resistance.
+		// 42: resistance deadly stellars.
+		// 43: paint.
+		// 44: restricts reinforcements for a government class.
+		// 45: modify max guns.
+		// 46: modify max turrets.
+		// 47: destroy player in flight.
+		// 48: tricks government class IFF.
+		// 49: disabled repair system.
+		// 50: randomly self-destructs, damaging ship.
+	}
+
+	char contribute[8];
+	memcpy(contribute, data.ReadBytes(8).data(), 8);
+	char require[8];
+	memcpy(require, data.ReadBytes(8).data(), 8);
+	char availability[255];
+	memcpy(availability, data.ReadBytes(255).data(), 255);
+	char onPurchase[255];
+	memcpy(onPurchase, data.ReadBytes(255).data(), 255);
+	char onSell[255];
+	memcpy(onSell, data.ReadBytes(255).data(), 255);
+	char shortName[64];
+	memcpy(shortName, data.ReadBytes(64).data(), 64);
+	char lowerCaseName[64];
+	memcpy(lowerCaseName, data.ReadBytes(64).data(), 64);
+	char lowerCasePluralName[65];
+	memcpy(lowerCasePluralName, data.ReadBytes(65).data(), 65);
+
+	int16_t itemClass = data.ReadSignedShort();
+	char scanMask[2];
+	memcpy(scanMask, data.ReadBytes(2).data(), 2);
+	int16_t buyRandom = data.ReadByte();
+	int16_t requiredGovernment = data.ReadByte();
+
+
+}
+
+
+
+void Outfit::FinishLoadingRez()
+{
+	if(!rezWeapon)
+		return;
+
+	*static_cast<Weapon *>(this) = *rezWeapon;
 }
 
 

@@ -93,6 +93,9 @@ void UniverseObjects::FinishLoading()
 	neighborDistances.insert(System::DEFAULT_NEIGHBOR_DISTANCE);
 	UpdateSystems();
 
+	for(auto &&it : outfits)
+		it.second.FinishLoadingRez();
+
 	// And, update the ships with the outfits we've now finished loading.
 	for(auto &&it : ships)
 		it.second.FinishLoading(true);
@@ -525,6 +528,9 @@ void UniverseObjects::LoadRezFile(const string &path, bool debugMode)
 		else if(code == "weap")
 			for(const Resource &resource : type)
 				weapons.Get(Resource::IDToString(resource.ID()))->LoadWeapon(resource);
+		else if(code == "outf")
+			for(const Resource &resource : type)
+				outfits.Get(Resource::IDToString(resource.ID()))->Load(resource);
 	}
 }
 

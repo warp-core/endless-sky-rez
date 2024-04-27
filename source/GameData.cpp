@@ -748,6 +748,13 @@ const Set<Description> &GameData::Descriptions()
 
 
 
+const Set<Weapon> &GameData::Weapons()
+{
+	return objects.weapons;
+}
+
+
+
 const Government *GameData::PlayerGovernment()
 {
 	return playerGovernment;

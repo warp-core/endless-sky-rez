@@ -28,6 +28,7 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 class Body;
 class DataNode;
 class Effect;
+class Resource;
 class Sound;
 class Sprite;
 
@@ -48,6 +49,8 @@ public:
 	// An "outfit" can be loaded from an "outfit" node or from a ship's
 	// "attributes" node.
 	void Load(const DataNode &node);
+	void Load(const Resource &resource);
+	void FinishLoadingRez();
 	bool IsDefined() const;
 
 	const std::string &TrueName() const;
@@ -110,6 +113,7 @@ private:
 
 private:
 	bool isDefined = false;
+	const Weapon *rezWeapon = nullptr;
 	std::string trueName;
 	std::string displayName;
 	std::string pluralName;

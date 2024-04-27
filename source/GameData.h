@@ -144,6 +144,7 @@ public:
 	static const Set<Wormhole> &Wormholes();
 
 	static const Set<Description> &Descriptions();
+	static const Set<Weapon> &Weapons();
 
 	static ConditionsStore &GlobalConditions();
 
