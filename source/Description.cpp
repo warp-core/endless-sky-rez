@@ -66,7 +66,7 @@ void Description::Load(const Resource &resource)
 
 
 
-string Description::GetString() const
+const string &Description::GetString() const
 {
 	return content;
 }

@@ -8,7 +8,7 @@ class Resource;
 class Description {
 public:
 	void Load(const Resource &resource);
-	std::string GetString() const;
+	const std::string &GetString() const;
 
 
 private:
