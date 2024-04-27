@@ -156,9 +156,9 @@ private:
 	int swizzle = 0;
 	ExclusiveItem<Color> color;
 
-	std::set<string> classes;
-	std::set<string> alliedClasses;
-	std::set<string> enemyClasses;
+	std::set<std::string> classes;
+	std::set<std::string> alliedClasses;
+	std::set<std::string> enemyClasses;
 
 	std::vector<double> attitudeToward;
 	double defaultAttitude = 0.;
