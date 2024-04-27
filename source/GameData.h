@@ -34,6 +34,7 @@ class Conversation;
 class DataNode;
 class DataWriter;
 class Date;
+class Description;
 class Effect;
 class Fleet;
 class FormationPattern;
@@ -141,6 +142,8 @@ public:
 	static const Set<Test> &Tests();
 	static const Set<TestData> &TestDataSets();
 	static const Set<Wormhole> &Wormholes();
+
+	static const Set<Description> &Descriptions();
 
 	static ConditionsStore &GlobalConditions();
 

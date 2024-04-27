@@ -23,6 +23,7 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include "CategoryList.h"
 #include "Color.h"
 #include "Conversation.h"
+#include "Description.h"
 #include "Effect.h"
 #include "Fleet.h"
 #include "FormationPattern.h"
@@ -129,6 +130,8 @@ private:
 	Set<Sale<Outfit>> outfitSales;
 	Set<Wormhole> wormholes;
 	std::set<double> neighborDistances;
+
+	Set<Description> descriptions;
 
 	Gamerules gamerules;
 	TextReplacements substitutions;

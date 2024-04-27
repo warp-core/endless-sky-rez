@@ -24,6 +24,7 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include "Conversation.h"
 #include "DataNode.h"
 #include "DataWriter.h"
+#include "Description.h"
 #include "Effect.h"
 #include "Files.h"
 #include "FillShader.h"
@@ -736,6 +737,13 @@ const Set<System> &GameData::Systems()
 const Set<Wormhole> &GameData::Wormholes()
 {
 	return objects.wormholes;
+}
+
+
+
+const Set<Description> &GameData::Descriptions()
+{
+	return objects.descriptions;
 }
 
 
