@@ -522,6 +522,9 @@ void UniverseObjects::LoadRezFile(const string &path, bool debugMode)
 		else if(code == "desc")
 			for(const Resource &resource : type)
 				descriptions.Get(Resource::IDToString(resource.ID()))->Load(resource);
+		else if(code == "weap")
+			for(const Resource &resource : type)
+				weapons.Get(Resource::IDToString(resource.ID()))->LoadWeapon(resource);
 	}
 }
 

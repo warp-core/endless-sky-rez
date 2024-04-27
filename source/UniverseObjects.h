@@ -132,6 +132,7 @@ private:
 	std::set<double> neighborDistances;
 
 	Set<Description> descriptions;
+	Set<Weapon> weapons;
 
 	Gamerules gamerules;
 	TextReplacements substitutions;

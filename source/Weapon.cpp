@@ -20,6 +20,8 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include "Effect.h"
 #include "GameData.h"
 #include "Outfit.h"
+#include "rez/Resource.h"
+#include "rez/ResourceFileStream.h"
 #include "SpriteSet.h"
 
 #include <algorithm>
@@ -387,6 +389,187 @@ void Weapon::LoadWeapon(const DataNode &node)
 	// except if it is already overridden.
 	if(!isSafe && blastRadius > 0 && !safeRangeOverriden)
 		safeRange = (blastRadius + triggerRadius);
+}
+
+
+
+void Weapon::LoadWeapon(const Resource &resource)
+{
+	ResourceFileStream data(resource.Data());
+
+	reload = data.ReadSignedShort() * 2.;
+	lifetime = data.ReadSignedShort() * 2.;
+	damage[HULL_DAMAGE] = data.ReadSignedShort();
+	damage[DISABLED_DAMAGE] = damage[HULL_DAMAGE];
+	damage[MINABLE_DAMAGE] = damage[HULL_DAMAGE];
+	damage[SHIELD_DAMAGE] = data.ReadSignedShort();
+
+	int16_t guidance = data.ReadSignedShort();
+	bool am = false;
+	bool turret = false;
+	bool homing = false;
+	if(guidance != -1)
+	{
+		if(guidance == 0)
+			// Beam.
+			turret = false;
+		else if(guidance == 1)
+			homing = true;
+		else if(guidance == 3)
+			// Turret beam.
+			turret = true;
+		else if(guidance == 4)
+			// Turret, unguided.
+			turret = true;
+		// 5: Freeform bomb.
+		// 6: Freeform rocket.
+		else if(guidance == 7)
+			// Forward arc turret.
+			turret = true;
+		else if(guidance == 8)
+			// Rear arc turret.
+			turret = true;
+		else if(guidance == 9 || guidance == 10)
+			// 9: Point defense turret.
+			// 10: Point defense beam.
+			am = true;
+		// 99: Carried ship.
+	}
+
+	velocity = data.ReadSignedShort() / 100.;
+
+	int16_t ammoType = data.ReadSignedShort();
+	if(ammoType <= -1000)
+		firingFuel = -(ammoType + 1000) / 10.;
+
+	int16_t graphics = data.ReadSignedShort();
+
+	inaccuracy = data.ReadSignedShort();
+
+	int16_t sound = data.ReadSignedShort();
+
+	damage[HIT_FORCE] = data.ReadSignedShort();
+
+	int16_t explosionType = data.ReadSignedShort();
+
+	triggerRadius = data.ReadSignedShort();
+	blastRadius = data.ReadSignedShort();
+
+	uint16_t flags1 = data.ReadShort();
+	{
+		// Spin graphic continuously (rate controlled by beamWidth.)
+		// Weapon fires on second trigger.
+		// For cycling weapons, always restart animation.
+		// Guided weapons don't fire at fast (turn > 30) ships.
+		// Loop sound.
+
+		if(flags1 & 0x0020)
+			piercing = 1.;
+		if(flags1 & 0x0040)
+			isStreamed = false;
+		// Missile streangth = 0.
+		if(flags1 & 0x0100)
+			isSafe = true;
+		// Small smoke.
+		// Big smoke.
+		// Smoke trail more persistent.
+		// Turrets: forward blindspot.
+		// Turrets: flank blindspots.
+		// Turrets: rear blindspot.
+		// Detonate at the end of lifetime.
+	}
+
+	uint16_t seekerFlags = data.ReadShort();
+	{
+		if(seekerFlags & 0x0001)
+			isPhasing = true;
+		// 0x0002: decoyed by asteroids.
+		// 0x0008: confused by sensor interference.
+		// 0x0010: turns away if jammed.
+		// 0x0020: can't fire if ship is ionised.
+		// 0x4000: loses lock if target not straight ahead.
+		// 0x8000: may attack parent if jammed.
+	}
+
+	int16_t smokeSet = data.ReadSignedShort();
+	int16_t decay = data.ReadSignedShort();
+	int16_t particleCount = data.ReadSignedShort();
+	int16_t particleVelocity = data.ReadSignedShort();
+	int16_t particleLife[2];
+	particleLife[0] = data.ReadSignedShort();
+	particleLife[1] = data.ReadSignedShort();
+	uint32_t particleColour = data.ReadLong();
+	int16_t beamLength = data.ReadSignedShort();
+	int16_t beamWidth = data.ReadSignedShort();
+	int16_t beamFalloff = data.ReadSignedShort();
+	uint32_t beamColour = data.ReadLong();
+	uint32_t coronaColour = data.ReadLong();
+
+	int16_t submunitionCount = data.ReadSignedShort();
+	int16_t submunitionType = data.ReadSignedShort();
+	int16_t submunitionAngle = data.ReadSignedShort();
+	int16_t submunitionLimit = data.ReadSignedShort();
+
+	int16_t proximityDelay = data.ReadSignedShort();
+
+	uint16_t flags2 = data.ReadShort();
+	{
+		// Cycling weapons: hold on first frame until proximityDelay elapsed.
+		// Cycling weapons: stop graphic on last frame.
+		// Blast radius ignores asteroids.
+		// Homing weapons: blast radius triggered by ships other than the target.
+		// Submunitions fire towards nearest valid target.
+		// Don't launch submunitions when the shot expires.
+		// Hide weapon ammo count in HUD.
+		// Weapon only fires when there is at least one of this ship's keyCarried type aboard.
+		// AI ships won't use this weapon.
+		// Uses ship's weapon sprite, if applicable.
+		// Weapon can only hit "planet"-type ships or destroyable stellar objects.
+		// Don't display or allow selecting weapon if out of ammo.
+		if(flags2 & 0x1000)
+			damage[DISABLED_DAMAGE] = 0.;
+		// Beam weapons: draw beam below ships.
+		// Weapon can fire while cloaked.
+		if(flags2 & 0x8000)
+			damage[MINABLE_DAMAGE] = 10. * damage[HULL_DAMAGE];
+	}
+
+	int16_t ionisation = data.ReadSignedShort();
+	int16_t hitParticleCount = data.ReadSignedShort();
+	int16_t hitParticleLife = data.ReadSignedShort();
+	int16_t hitParticleVelocity = data.ReadSignedShort();
+	uint32_t hitParticleColour = data.ReadLong();
+
+	firingForce = data.ReadSignedShort();
+
+	int16_t exitType = data.ReadSignedShort();
+
+	burstCount = data.ReadSignedShort();
+	if(burstCount == -1)
+		burstCount = 0;
+	burstReload = data.ReadSignedShort() * 2.;
+	if(burstCount)
+		swap(burstReload, reload);
+
+	int16_t jammingVulnerability[4];
+	for(int i = 0; i < 4; ++i)
+		jammingVulnerability[i] = data.ReadSignedShort();
+
+	uint16_t flags3 = data.ReadShort();
+	{
+		// 0x0001: Consumes ammo at the end of a burst cycle.
+		// 0x0002: Shots are translucent.
+		// 0x0004: Only one shot of this weapon can be in flight at a time.
+		// 0x0010: Weapon fires from exit point closest to target.
+		// 0x0020: No other weapons on the ship can fire while this weapon is firing or reloading.
+	}
+
+	int16_t durability = data.ReadSignedShort();
+	int16_t guidedTurnRate = data.ReadSignedShort();
+	int16_t maxAmmo = data.ReadSignedShort();
+	int16_t lightningDensity = data.ReadSignedShort();
+	int16_t lightningAmplitude = data.ReadSignedShort();
+	uint32_t ionisationColour = data.ReadLong();
 }
 
 
