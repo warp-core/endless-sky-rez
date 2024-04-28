@@ -64,6 +64,8 @@ target_sources(EndlessSkyLib PRIVATE
 	ConditionSet.h
 	ConditionsStore.cpp
 	ConditionsStore.h
+	ControlBitTestExpression.cpp
+	ControlBitTestExpression.h
 	Conversation.cpp
 	Conversation.h
 	ConversationPanel.cpp
