@@ -964,7 +964,7 @@ void MapPanel::UpdateCache()
 			const System &system = it.second;
 
 			// Only check displayed systems.
-			if(!system.IsValid() || system.Inaccessible() || !player.HasVisited(system))
+			if(!system.IsValid() || !system.Visible(player) || system.Inaccessible() || !player.HasVisited(system))
 				continue;
 
 			const double danger = DangerFleetTotal(player, system, false);

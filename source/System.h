@@ -17,6 +17,7 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #define SYSTEM_H_
 
 #include "ConditionSet.h"
+#include "ControlBitTestExpression.h"
 #include "Hazard.h"
 #include "Point.h"
 #include "RaidFleet.h"
@@ -103,6 +104,8 @@ public:
 	// If this system has its own jump range, then it will always return the
 	// systems within that jump range instead of the jump range given.
 	const std::set<const System *> &JumpNeighbors(double neighborDistance) const;
+
+	bool Visible(const PlayerInfo &player) const;
 	// Defines whether this system can be seen when not linked. A hidden system will
 	// not appear when in view range, except when linked to a visited system.
 	bool Hidden() const;
@@ -226,6 +229,8 @@ private:
 	// Other systems that can be accessed from this system via a jump drive at various jump ranges.
 	std::map<double, std::set<const System *>> neighbors;
 
+	ControlBitTestExpression visibility;
+	bool visible = true;
 	// Defines whether this system can be seen when not linked. A hidden system will
 	// not appear when in view range, except when linked to a visited system.
 	bool hidden = false;

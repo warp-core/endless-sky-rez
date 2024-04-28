@@ -537,8 +537,8 @@ void System::Load(const Resource &res, Set<Planet> &planets)
 	uint32_t backgroundColour = data.ReadLong();
 	int16_t murk = data.ReadSignedShort();
 	uint16_t asteroidTypes = data.ReadShort();
-	char visibility[256];
-	memcpy(visibility, data.ReadBytes(256).data(), 256);
+	visibility.Load(data.ReadBytes(256).data(), 256);
+	visible = visibility.Test(ConditionsStore{});
 	int16_t reinforcementFleet = data.ReadSignedShort();
 	int16_t reinforcementTime = data.ReadSignedShort();
 	int16_t reinforcementInterval = data.ReadSignedShort();
@@ -555,6 +555,10 @@ void System::UpdateSystem(const Set<System> &systems, const set<double> &neighbo
 	accessibleLinks.clear();
 	neighbors.clear();
 
+	static const ConditionsStore EMPTY;
+	const ConditionsStore &conditions = (player ? player->Conditions() : EMPTY);
+	visible = visibility.Test(conditions);
+
 	// Some systems in the game may be considered inaccessible. If this system is inaccessible,
 	// then it shouldn't have accessible links or jump neighbors.
 	if(inaccessible)
@@ -563,7 +567,7 @@ void System::UpdateSystem(const Set<System> &systems, const set<double> &neighbo
 	// If linked systems are inaccessible, then they shouldn't be a part of the accessible links
 	// set that gets used for navigation and other purposes.
 	for(const System *link : links)
-		if(!link->Inaccessible())
+		if(!link->Inaccessible() || !link->visible)
 			accessibleLinks.insert(link);
 
 	// Neighbors are cached for each system for the purpose of quicker
@@ -714,6 +718,13 @@ const set<const System *> &System::JumpNeighbors(double neighborDistance) const
 
 
 
+bool System::Visible(const PlayerInfo &player) const
+{
+	return visibility.Test(player.Conditions());
+}
+
+
+
 // Defines whether this system can be seen when not linked. A hidden system will
 // not appear when in view range, except when linked to a visited system.
 bool System::Hidden() const
@@ -734,6 +745,8 @@ bool System::Shrouded() const
 // Defines whether this system can be accessed or interacted with in any way.
 bool System::Inaccessible() const
 {
+	if(!visible)
+		return true;
 	return inaccessible;
 }
 
