@@ -75,6 +75,8 @@ public:
 	const std::vector<RandomEvent<Hazard>> &Hazards() const;
 	// Find out how far this object is from its parent.
 	double Distance() const;
+	// Find out how fast (in degrees per day) this object completes an orbit of its parent.
+	double Speed() const;
 
 
 private:

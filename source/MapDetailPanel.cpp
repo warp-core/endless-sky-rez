@@ -894,6 +894,10 @@ void MapDetailPanel::DrawOrbits()
 		if(object.Radius() <= 0.)
 			continue;
 
+		// DOn't draw a ring for an object that doesn't actually move around its parent.
+		if(!object.Speed())
+			continue;
+
 		Point parentPos;
 		int habit = 5;
 		if(object.Parent() >= 0)

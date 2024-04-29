@@ -206,6 +206,14 @@ double StellarObject::Distance() const
 
 
 
+// Find out how fast (in degrees per day) this object completes an orbit of its parent.
+double StellarObject::Speed() const
+{
+	return speed;
+}
+
+
+
 const vector<RandomEvent<Hazard>> &StellarObject::Hazards() const
 {
 	return hazards;
