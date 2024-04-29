@@ -130,7 +130,7 @@ public:
 	// must be done when game events rearrange the planets in a system.
 	void RemoveSystem(const System *system);
 	// Every system this planet is in. If this list has more than one entry, it's a wormhole.
-	const std::vector<const System *> &Systems() const;
+	const std::vector<const System *> Systems() const;
 
 	// Check if planet is part of a wormhole (that is, landing on it will take you to a new system).
 	bool IsWormhole() const;

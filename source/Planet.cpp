@@ -373,7 +373,7 @@ void Planet::Load(const Resource &res)
 void Planet::FinishLoading(Set<Wormhole> &wormholes)
 {
 	// If this planet is in multiple systems, then it is a wormhole.
-	if(!wormhole && systems.size() > 1)
+	if(!wormhole && Systems().size() > 1)
 	{
 		wormhole = wormholes.Get(TrueName());
 		wormhole->LoadFromPlanet(*this);
@@ -587,7 +587,12 @@ bool Planet::HasCustomSecurity() const
 
 const System *Planet::GetSystem() const
 {
-	return (systems.empty() ? nullptr : systems.front());
+	if(systems.empty())
+		return nullptr;
+	auto it = find_if(systems.begin(), systems.end(), [](const System *system) { return system->IsVisible(nullptr); });
+	if(it == systems.end())
+		return nullptr;
+	return *it;
 }
 
 
@@ -620,9 +625,13 @@ void Planet::RemoveSystem(const System *system)
 
 
 
-const vector<const System *> &Planet::Systems() const
+const vector<const System *> Planet::Systems() const
 {
-	return systems;
+	vector<const System *> result;
+	for(const System *system : systems)
+		if(system->IsVisible(nullptr))
+			result.emplace_back(system);
+	return result;
 }
 
 
