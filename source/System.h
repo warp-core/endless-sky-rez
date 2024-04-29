@@ -186,6 +186,8 @@ public:
 
 	const std::vector<RaidFleet> &RaidFleets() const;
 
+	double MaxOrbitsViewRange() const;
+
 
 private:
 	void LoadObject(const DataNode &node, Set<Planet> &planets, int parent = -1);
@@ -262,6 +264,7 @@ private:
 	double solarPower = 0.;
 	double solarWind = 0.;
 	double starfieldDensity = 1.;
+	double maxOrbitsViewRange = 0.;
 	int minimumFleetPeriod = 0;
 
 	std::vector<RaidFleet> raidFleets;

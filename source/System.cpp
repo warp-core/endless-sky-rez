@@ -496,6 +496,7 @@ void System::Load(const Resource &res, Set<Planet> &planets)
 
 	name = res.Name();
 	trueName = res.IDString();
+	maxOrbitsViewRange = 2500.;
 
 	ResourceFileStream data(vector<char>(res.Data()));
 
@@ -1112,6 +1113,13 @@ const vector<RaidFleet> &System::RaidFleets() const
 	static const vector<RaidFleet> EMPTY;
 	// If the system defines its own raid fleets then those are used in lieu of the government's fleets.
 	return noRaids ? EMPTY : ((raidFleets.empty() && government) ? government->RaidFleets() : raidFleets);
+}
+
+
+
+double System::MaxOrbitsViewRange() const
+{
+	return maxOrbitsViewRange;
 }
 
 

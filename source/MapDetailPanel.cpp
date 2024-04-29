@@ -871,6 +871,11 @@ void MapDetailPanel::DrawOrbits()
 		}
 		maxDistance = max(maxDistance, distance);
 	}
+
+	double systemMaxViewRange = selectedSystem->MaxOrbitsViewRange();
+	if(systemMaxViewRange)
+		maxDistance = min(maxDistance, systemMaxViewRange);
+
 	// 2400 -> 120.
 	scale = .03;
 	maxDistance *= scale;
@@ -909,6 +914,8 @@ void MapDetailPanel::DrawOrbits()
 		}
 
 		double radius = object.Distance() * scale;
+		if(radius > maxDistance)
+			continue;
 		RingShader::Draw(orbitCenter + parentPos * scale,
 			radius + .7, radius - .7,
 			habitColor[habit]);
