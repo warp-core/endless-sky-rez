@@ -1124,11 +1124,11 @@ void MapPanel::UpdateCache()
 	for(const auto &it : GameData::Systems())
 	{
 		const System *system = &it.second;
-		if(!system->IsValid() || !player.HasSeen(*system))
+		if(!system->IsValid() || !player.HasSeen(*system) || !system->IsVisible(nullptr))
 			continue;
 
 		for(const System *link : system->Links())
-			if(link < system || !player.HasSeen(*link))
+			if(link < system || !player.HasSeen(*link) || !link->IsVisible(nullptr))
 			{
 				// Only draw links between two systems if one of the two is
 				// viewable. Also, avoid drawing twice by only drawing in the
