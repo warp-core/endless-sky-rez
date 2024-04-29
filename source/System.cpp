@@ -567,7 +567,7 @@ void System::UpdateSystem(const Set<System> &systems, const set<double> &neighbo
 	// If linked systems are inaccessible, then they shouldn't be a part of the accessible links
 	// set that gets used for navigation and other purposes.
 	for(const System *link : links)
-		if(!link->Inaccessible() || !link->visible)
+		if(!link->Inaccessible() && link->IsVisible(player))
 			accessibleLinks.insert(link);
 
 	// Neighbors are cached for each system for the purpose of quicker
@@ -718,9 +718,11 @@ const set<const System *> &System::JumpNeighbors(double neighborDistance) const
 
 
 
-bool System::Visible(const PlayerInfo &player) const
+bool System::IsVisible(const PlayerInfo *player) const
 {
-	return visibility.Test(player.Conditions());
+	if(player)
+		visible = visibility.Test(player->Conditions());
+	return visible;
 }
 
 
