@@ -538,6 +538,9 @@ void UniverseObjects::LoadRezFile(const string &path, bool debugMode)
 		else if(code == "outf")
 			for(const Resource &resource : type)
 				outfits.Get(resource.IDString())->Load(resource);
+		else if(code == "ship")
+			for(const Resource &resource : type)
+				ships.Get(resource.IDString())->Load(resource);
 	}
 }
 
