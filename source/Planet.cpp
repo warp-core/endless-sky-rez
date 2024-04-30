@@ -306,6 +306,8 @@ void Planet::Load(const Resource &res)
 	id = res.ID();
 	isDefined = true;
 
+	port.LoadDefaultSpaceport();
+
 	ResourceFileStream data(res.Data());
 
 	data.Move(6);
@@ -313,11 +315,20 @@ void Planet::Load(const Resource &res)
 	uint32_t flags1 = data.ReadLong();
 	{
 		// 0x00000001: can land here.
+		inhabited = (flags1 & 0x00000001);
 		// 0x00000002: has trade.
+		if(!(flags1 & 0x00000002))
+			port.SetServices(port.GetServices() & ~Port::ServicesType::Trading);
 		// 0x00000004: can outfit ships here.
 		// 0x00000008: can buy ships here.
 		// 0x00000020: uninhabted (no traffic control or refuelling.)
+		if(flags1 & 0x00000020)
+			port.SetRecharge(Port::RechargeType::None);
 		// 0x00000040: has bar.
+		if(!(flags1 & 0x00000040))
+		{
+			port.SetServices(port.GetServices() & ~Port::ServicesType::OffersMissions);
+		}
 		// 0x00000080: can only land if stellar is destroyed.
 		// 0x?0000000: food: 0 - no food, 1, 2, 4 - low, medium, high prices.
 		// 0x0?000000: industrial.

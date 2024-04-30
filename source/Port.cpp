@@ -138,6 +138,20 @@ void Port::LoadUninhabitedSpaceport()
 
 
 
+void Port::SetServices(int type)
+{
+	services = type;
+}
+
+
+
+void Port::SetRecharge(int type)
+{
+	recharge = type;
+}
+
+
+
 bool Port::CustomLoaded() const
 {
 	return loaded;
@@ -157,6 +171,13 @@ bool Port::HasServices() const
 int Port::GetRecharges() const
 {
 	return recharge;
+}
+
+
+
+int Port::GetServices() const
+{
+	return services;
 }
 
 

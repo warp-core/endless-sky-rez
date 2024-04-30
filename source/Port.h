@@ -63,6 +63,9 @@ public:
 	void LoadDefaultSpaceport();
 	void LoadUninhabitedSpaceport();
 
+	void SetServices(int type);
+	void SetRecharge(int type);
+
 	// Whether this port was loaded from the Load function.
 	bool CustomLoaded() const;
 
@@ -71,6 +74,7 @@ public:
 
 	// Get all the possible sources that can get recharged at this port.
 	int GetRecharges() const;
+	int GetServices() const;
 
 	const std::string &Name() const;
 	std::string &Description();
