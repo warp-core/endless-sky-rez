@@ -379,6 +379,7 @@ void Outfit::Load(const Resource &resource)
 
 	int16_t displayWeight = data.ReadSignedShort();
 	mass = data.ReadSignedShort();
+	attributes["outfit space"] = -mass;
 	int16_t techLevel = data.ReadSignedShort();
 
 	struct Modification {
