@@ -36,6 +36,8 @@ this program. If not, see <https://www.gnu.org/licenses/>.
 #include "Preferences.h"
 #include "Projectile.h"
 #include "Random.h"
+#include "rez/Resource.h"
+#include "rez/ResourceFileStream.h"
 #include "ShipEvent.h"
 #include "Sound.h"
 #include "Sprite.h"
@@ -224,6 +226,13 @@ namespace {
 Ship::Ship(const DataNode &node)
 {
 	Load(node);
+}
+
+
+
+Ship::Ship(const Resource &resource)
+{
+	Load(resource);
 }
 
 
@@ -567,6 +576,109 @@ void Ship::Load(const DataNode &node)
 
 
 
+void Ship::Load(const Resource &resource)
+{
+	ResourceFileStream data(resource.Data());
+
+	trueModelName = resource.IDString();
+	displayModelName = resource.Name();
+
+	baseAttributes.Set("cargo space", data.ReadSignedShort());
+	baseAttributes.Set("shields", data.ReadSignedShort());
+	baseAttributes.Set("acceleration", data.ReadSignedShort());
+	baseAttributes.Set("max speed", data.ReadSignedShort());
+	baseAttributes.Set("turning", data.ReadSignedShort());
+	baseAttributes.Set("fuel capacity", data.ReadSignedShort());
+	baseAttributes.Set("free mass", data.ReadSignedShort());
+	baseAttributes.Set("hull", data.ReadSignedShort());
+	baseAttributes.Set("shield generation", data.ReadSignedShort() / 2000.);
+
+	int16_t weapons[8];
+	int16_t weaponCounts[8];
+	int16_t weaponAmmos[8];
+	for(int i = 0; i < 4; ++i)
+		weapons[i] = data.ReadSignedShort();
+	for(int i = 0; i < 4; ++i)
+		weaponCounts[i] = data.ReadSignedShort();
+	for(int i = 0; i < 4; ++i)
+		weaponAmmos[i] = data.ReadSignedShort();
+	int16_t maxGuns = data.ReadSignedShort();
+	int16_t maxTurrets = data.ReadSignedShort();
+	int16_t techLevel = data.ReadSignedShort();
+	int32_t cost = data.ReadSignedLong();
+	int16_t deathDelay = data.ReadSignedShort();
+
+	baseAttributes.Set("hull repair rate", data.ReadSignedShort() / 2000.);
+
+	int16_t explosion1 = data.ReadSignedShort();
+	int16_t explosion2 = data.ReadSignedShort();
+	int16_t displayWeight = data.ReadSignedShort();
+	int16_t mass = data.ReadSignedShort();
+	int16_t length = data.ReadSignedShort();
+	int16_t escortAI = data.ReadSignedShort();
+	baseAttributes.Set("required crew", data.ReadSignedShort());
+	int16_t strength = data.ReadSignedShort();
+	int16_t government = data.ReadSignedShort();
+	uint16_t flags1 = data.ReadShort();
+	int16_t escapePodCount = data.ReadSignedShort();
+	int16_t installedOutfits[8];
+	int16_t outfitCounts[8];
+	for(int i = 0; i < 4; ++i)
+		installedOutfits[i] = data.ReadSignedShort();
+	for(int i = 0; i < 4; ++i)
+		outfitCounts[i] = data.ReadSignedShort();
+	int16_t fuelRegeneration = data.ReadSignedShort();
+	int16_t skillVariation = data.ReadSignedShort();
+	uint16_t flags2 = data.ReadShort();
+
+	char contribute[8];
+	memcpy(contribute, data.ReadBytes(8).data(), 8);
+	char availability[255];
+	memcpy(availability, data.ReadBytes(255).data(), 255);
+	char appearOn[255];
+	memcpy(appearOn, data.ReadBytes(255).data(), 255);
+	char onPurchase[256];
+	memcpy(onPurchase, data.ReadBytes(256).data(), 256);
+	int16_t deionize = data.ReadSignedShort();
+	int16_t maxIonization = data.ReadSignedShort();
+	int16_t bayCarried = data.ReadSignedShort();
+	for(int i = 4; i < 8; ++i)
+		installedOutfits[i] = data.ReadSignedShort();
+	for(int i = 4; i < 8; ++i)
+		outfitCounts[i] = data.ReadSignedShort();
+	char require[8];
+	memcpy(require, data.ReadBytes(8).data(), 8);
+	int16_t buyRandom = data.ReadSignedShort();
+	int16_t hireRandom = data.ReadSignedShort();
+	char onCapture[255];
+	memcpy(onCapture, data.ReadBytes(255).data(), 255);
+	char onRetire[255];
+	memcpy(onRetire, data.ReadBytes(255).data(), 255);
+	char shortName[64];
+	memcpy(shortName, data.ReadBytes(64).data(), 64);
+	char commName[32];
+	memcpy(commName, data.ReadBytes(32).data(), 32);
+	char longName[128];
+	memcpy(longName, data.ReadBytes(128).data(), 128);
+	char movieFile[32];
+	memcpy(movieFile, data.ReadBytes(32).data(), 32);
+	for(int i = 4; i < 8; ++i)
+		weapons[i] = data.ReadSignedShort();
+	for(int i = 4; i < 8; ++i)
+		weaponCounts[i] = data.ReadSignedShort();
+	for(int i = 4; i < 8; ++i)
+		weaponAmmos[i] = data.ReadSignedShort();
+	char subtitle[64];
+	memcpy(subtitle, data.ReadBytes(64).data(), 64);
+	uint16_t flags3 = data.ReadSignedShort();
+	int16_t escortUpgradeTo = data.ReadSignedShort();
+	int32_t escortUpgradeCost = data.ReadSignedLong();
+	int32_t escortSellValue = data.ReadSignedLong();
+	int16_t escortType = data.ReadSignedShort();
+}
+
+
+
 // When loading a ship, some of the outfits it lists may not have been
 // loaded yet. So, wait until everything has been loaded, then call this.
 void Ship::FinishLoading(bool isNewInstance)
@@ -820,7 +932,7 @@ void Ship::FinishLoading(bool isNewInstance)
 		if(val < 0)
 			warning += attr + ": " + Format::Number(val) + "\n";
 	}
-	if(attributes.Get("drag") <= 0.)
+	if(attributes.Get("drag") <= 0. && !attributes.Get("max speed"));
 	{
 		warning += "Defaulting " + string(attributes.Get("drag") ? "invalid" : "missing") + " \"drag\" attribute to 100.0\n";
 		attributes.Set("drag", 100.);
@@ -2843,6 +2955,9 @@ double Ship::InertialMass() const
 
 double Ship::TurnRate() const
 {
+	double turning = attributes.Get("turning");
+	if(turning)
+		return turning;
 	return attributes.Get("turn") / InertialMass()
 		* (1. + attributes.Get("turn multiplier"));
 }
@@ -2851,6 +2966,9 @@ double Ship::TurnRate() const
 
 double Ship::Acceleration() const
 {
+	double acceleration = attributes.Get("acceleration");
+	if(acceleration)
+		return acceleration;
 	double thrust = attributes.Get("thrust");
 	return (thrust ? thrust : attributes.Get("afterburner thrust")) / InertialMass()
 		* (1. + attributes.Get("acceleration multiplier"));
@@ -2860,6 +2978,9 @@ double Ship::Acceleration() const
 
 double Ship::MaxVelocity() const
 {
+	double maxSpeed = attributes.Get("max speed");
+	if(maxSpeed)
+		return maxSpeed;
 	// v * drag / mass == thrust / mass
 	// v * drag == thrust
 	// v = thrust / drag
@@ -2879,6 +3000,9 @@ double Ship::ReverseAcceleration() const
 
 double Ship::MaxReverseVelocity() const
 {
+	double drag = attributes.Get("drag");
+	if(!drag)
+		return 0;
 	return attributes.Get("reverse thrust") / Drag();
 }
 
@@ -4434,7 +4558,7 @@ void Ship::DoMovement(bool &isUsingAfterburner)
 				isThrusting = (thrustCommand > 0.);
 				isReversing = !isThrusting && attributes.Get("reverse thrust");
 				thrust = attributes.Get(isThrusting ? "thrust" : "reverse thrust");
-				if(thrust)
+				if(thrust || attributes.Get("acceleration"))
 				{
 					double scale = fabs(thrustCommand);
 
@@ -4533,6 +4657,13 @@ void Ship::DoMovement(bool &isUsingAfterburner)
 					dragAcceleration = -vNormal * angle.Unit();
 			}
 			velocity += dragAcceleration;
+		}
+		double maxSpeed = attributes.Get("max speed");
+		if(maxSpeed)
+		{
+			double currentSpeed = velocity.Length();
+			if(currentSpeed > maxSpeed)
+				velocity *= maxSpeed / currentSpeed;
 		}
 		acceleration = Point();
 	}

@@ -49,6 +49,7 @@ class Phrase;
 class Planet;
 class PlayerInfo;
 class Projectile;
+class Resource;
 class StellarObject;
 class System;
 class Visual;
@@ -128,9 +129,11 @@ public:
 	Ship() = default;
 	// Construct and Load() at the same time.
 	Ship(const DataNode &node);
+	Ship(const Resource &resource);
 
 	// Load data for a type of ship:
 	void Load(const DataNode &node);
+	void Load(const Resource &resource);
 	// When loading a ship, some of the outfits it lists may not have been
 	// loaded yet. So, wait until everything has been loaded, then call this.
 	void FinishLoading(bool isNewInstance);
