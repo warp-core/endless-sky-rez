@@ -602,8 +602,8 @@ void Ship::Load(const Resource &resource)
 		weaponCounts[i] = data.ReadSignedShort();
 	for(int i = 0; i < 4; ++i)
 		weaponAmmos[i] = data.ReadSignedShort();
-	int16_t maxGuns = data.ReadSignedShort();
-	int16_t maxTurrets = data.ReadSignedShort();
+	baseAttributes.Set("gun ports", data.ReadSignedShort());
+	baseAttributes.Set("turret mounts", data.ReadSignedShort());
 	int16_t techLevel = data.ReadSignedShort();
 	int32_t cost = data.ReadSignedLong();
 	int16_t deathDelay = data.ReadSignedShort();
@@ -617,6 +617,7 @@ void Ship::Load(const Resource &resource)
 	int16_t length = data.ReadSignedShort();
 	int16_t escortAI = data.ReadSignedShort();
 	baseAttributes.Set("required crew", data.ReadSignedShort());
+	baseAttributes.Set("bunks", baseAttributes.Get("required crew") * 2.);
 	int16_t strength = data.ReadSignedShort();
 	int16_t government = data.ReadSignedShort();
 	uint16_t flags1 = data.ReadShort();
@@ -803,8 +804,11 @@ void Ship::FinishLoading(bool isNewInstance)
 	if(baseAttributes.Category() == "Drone" && !baseAttributes.Get("automaton"))
 		baseAttributes.Set("automaton", 1.);
 
-	baseAttributes.Set("gun ports", armament.GunCount());
-	baseAttributes.Set("turret mounts", armament.TurretCount());
+	if(!baseAttributes.Get("gun ports"))
+	{
+		baseAttributes.Set("gun ports", armament.GunCount());
+		baseAttributes.Set("turret mounts", armament.TurretCount());
+	}
 
 	if(addAttributes)
 	{
@@ -843,6 +847,13 @@ void Ship::FinishLoading(bool isNewInstance)
 						"weapon \"" + it.first->TrueName() + "\" installed, but insufficient slots to use it.");
 			}
 		}
+	}
+	if(baseAttributes.Get("free mass") && !baseAttributes.Get("outfit space"))
+	{
+		baseAttributes.Set("outfit space", attributes.Get("free mass") - attributes.Get("outfit space"));
+		attributes.Set("outfit space", attributes.Get("free mass"));
+		baseAttributes.Set("free mass", 0.);
+		attributes.Set("free mass", 0.);
 	}
 	if(!undefinedOutfits.empty())
 	{
