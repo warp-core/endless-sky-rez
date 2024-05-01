@@ -45,9 +45,13 @@ class BySeriesAndIndex<Ship> {
 public:
 	bool operator()(const std::string &nameA, const std::string &nameB) const
 	{
-		const Outfit &shipA = GameData::Ships().Get(nameA)->Attributes();
-		const Outfit &shipB = GameData::Ships().Get(nameB)->Attributes();
-		return Helper(shipA, shipB, nameA, nameB);
+		const Ship &shipA = *GameData::Ships().Get(nameA);
+		const std::string &displayNameA = shipA.DisplayModelName();
+		const Outfit &outfitA = shipA.Attributes();
+		const Ship &shipB = *GameData::Ships().Get(nameB);
+		const std::string &displayNameB = shipB.DisplayModelName();
+		const Outfit &outfitB = shipB.Attributes();
+		return Helper(outfitA, outfitB, displayNameA, displayNameB);
 	}
 };
 
