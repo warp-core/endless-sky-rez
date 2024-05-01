@@ -602,6 +602,20 @@ const string &Outfit::Description() const
 
 
 
+void Outfit::SetCost(int64_t newCost)
+{
+	cost = newCost;
+}
+
+
+
+void Outfit::SetMass(double newMass)
+{
+	mass = newMass;
+}
+
+
+
 // Get the licenses needed to purchase this outfit.
 const vector<string> &Outfit::Licenses() const
 {

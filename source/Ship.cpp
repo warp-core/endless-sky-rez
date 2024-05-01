@@ -605,7 +605,7 @@ void Ship::Load(const Resource &resource)
 	baseAttributes.Set("gun ports", data.ReadSignedShort());
 	baseAttributes.Set("turret mounts", data.ReadSignedShort());
 	int16_t techLevel = data.ReadSignedShort();
-	int32_t cost = data.ReadSignedLong();
+	baseAttributes.SetCost(data.ReadSignedLong());
 	int16_t deathDelay = data.ReadSignedShort();
 
 	baseAttributes.Set("hull repair rate", data.ReadSignedShort() / 2000.);
@@ -613,7 +613,7 @@ void Ship::Load(const Resource &resource)
 	int16_t explosion1 = data.ReadSignedShort();
 	int16_t explosion2 = data.ReadSignedShort();
 	int16_t displayWeight = data.ReadSignedShort();
-	int16_t mass = data.ReadSignedShort();
+	baseAttributes.SetMass(data.ReadSignedShort());
 	int16_t length = data.ReadSignedShort();
 	int16_t escortAI = data.ReadSignedShort();
 	baseAttributes.Set("required crew", data.ReadSignedShort());

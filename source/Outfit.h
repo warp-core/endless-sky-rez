@@ -62,7 +62,9 @@ public:
 	const int Index() const;
 	const std::string &Description() const;
 	int64_t Cost() const;
+	void SetCost(int64_t newCost);
 	double Mass() const;
+	void SetMass(double newMass);
 	// Get the licenses needed to buy or operate this ship.
 	const std::vector<std::string> &Licenses() const;
 	// Get the image to display in the outfitter when buying this item.
