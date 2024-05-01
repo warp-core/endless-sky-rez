@@ -943,7 +943,7 @@ void Ship::FinishLoading(bool isNewInstance)
 		if(val < 0)
 			warning += attr + ": " + Format::Number(val) + "\n";
 	}
-	if(attributes.Get("drag") <= 0. && !attributes.Get("max speed"));
+	if(attributes.Get("drag") <= 0. && !attributes.Get("max speed"))
 	{
 		warning += "Defaulting " + string(attributes.Get("drag") ? "invalid" : "missing") + " \"drag\" attribute to 100.0\n";
 		attributes.Set("drag", 100.);
