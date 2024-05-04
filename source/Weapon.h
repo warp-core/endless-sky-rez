@@ -61,6 +61,7 @@ public:
 	// Load from a "weapon" node, either in an outfit, a ship (explosion), or a hazard.
 	void LoadWeapon(const DataNode &node);
 	void LoadWeapon(const Resource &resource);
+	void FinishLoading();
 	bool IsWeapon() const;
 
 	// Get assets used by this weapon.
@@ -233,6 +234,8 @@ private:
 	Body hardpointSprite;
 	const Sound *sound = nullptr;
 	const Sprite *icon = nullptr;
+
+	const Weapon *ammoType = nullptr;
 
 	// Fire, die and hit effects.
 	std::map<const Effect *, int> fireEffects;

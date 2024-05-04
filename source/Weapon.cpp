@@ -438,9 +438,11 @@ void Weapon::LoadWeapon(const Resource &resource)
 
 	velocity = data.ReadSignedShort() / 100.;
 
-	int16_t ammoType = data.ReadSignedShort();
-	if(ammoType <= -1000)
-		firingFuel = -(ammoType + 1000) / 10.;
+	int16_t ammoTypeID = data.ReadSignedShort();
+	if(ammoTypeID <= -1000)
+		firingFuel = -(ammoTypeID + 1000) / 10.;
+	else if(ammoTypeID >= 0)
+		ammoType = GameData::Weapons().Get(Resource::IDToString(ammoTypeID + 128));
 
 	int16_t graphics = data.ReadSignedShort();
 
@@ -570,6 +572,29 @@ void Weapon::LoadWeapon(const Resource &resource)
 	int16_t lightningDensity = data.ReadSignedShort();
 	int16_t lightningAmplitude = data.ReadSignedShort();
 	uint32_t ionisationColour = data.ReadLong();
+}
+
+
+
+void Weapon::FinishLoading()
+{
+	if(!ammoType)
+		return;
+
+	for(const auto &it : GameData::Outfits())
+	{
+		const Outfit &outfit = it.second;
+		if(!outfit.IsAmmo())
+			continue;
+		const Weapon *outfitWeapon = outfit.GetRezWeapon();
+		if(!outfitWeapon)
+			continue;
+		if(outfitWeapon == ammoType)
+		{
+			ammo.first = &outfit;
+			ammo.second = 1;
+		}
+	}
 }
 
 
