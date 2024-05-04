@@ -414,7 +414,7 @@ void Outfit::Load(const Resource &resource)
 		mods[i] = {data.ReadSignedShort(), data.ReadSignedShort()};
 
 	bool isWeapon = mods[0].type == 1;
-	bool isAmmo = mods[0].type == 3;
+	isAmmo = mods[0].type == 3;
 	if(isWeapon || isAmmo)
 		rezWeapon = GameData::Weapons().Get(Resource::IDToString(mods[0].value));
 
@@ -531,6 +531,8 @@ void Outfit::FinishLoadingRez()
 	if(!rezWeapon)
 		return;
 
+		return;
+
 	*static_cast<Weapon *>(this) = *rezWeapon;
 }
 
@@ -540,6 +542,20 @@ void Outfit::FinishLoadingRez()
 bool Outfit::IsDefined() const
 {
 	return isDefined;
+}
+
+
+
+const Weapon *Outfit::GetRezWeapon() const
+{
+	return rezWeapon;
+}
+
+
+
+bool Outfit::IsAmmo() const
+{
+	return isAmmo;
 }
 
 

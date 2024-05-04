@@ -53,6 +53,9 @@ public:
 	void FinishLoadingRez();
 	bool IsDefined() const;
 
+	const Weapon *GetRezWeapon() const;
+	bool IsAmmo() const;
+
 	const std::string &TrueName() const;
 	const std::string &DisplayName() const;
 	void SetName(const std::string &name);
@@ -116,6 +119,7 @@ private:
 private:
 	bool isDefined = false;
 	const Weapon *rezWeapon = nullptr;
+	bool isAmmo = false;
 	std::string trueName;
 	std::string displayName;
 	std::string pluralName;
